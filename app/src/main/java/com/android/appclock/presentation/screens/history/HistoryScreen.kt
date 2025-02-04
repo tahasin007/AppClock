@@ -3,20 +3,27 @@ package com.android.appclock.presentation.screens.history
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import com.android.appclock.presentation.components.ScheduleListItem
+import com.android.appclock.presentation.screens.ScheduleViewModel
 
 @Composable
-fun HistoryScreen(navController: NavHostController) {
-    // Add your Home screen content here for testing
+fun HistoryScreen(viewModel: ScheduleViewModel) {
+    val schedules = remember { viewModel.schedules }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(top = 25.dp)
     ) {
-        Text("History Screen")
+        LazyColumn {
+            items(schedules.size) {
+                ScheduleListItem(schedule = schedules[it]) {}
+            }
+        }
     }
 }

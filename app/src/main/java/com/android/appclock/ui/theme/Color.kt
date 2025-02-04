@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 // 🌊 Sky Blue Theme
 val SkyBluePrimary = Color(0xFF0096FF)
 val SkyBlueOnPrimary = Color(0xFFFFFFFF)
-val SkyBlueSecondary = Color(0xFF87CEEB)
+val SkyBlueSecondary = Color(0xFFA6DBF1)
 val SkyBlueOnSecondary = Color(0xFF000000)
 
 // 🔴 Red Theme

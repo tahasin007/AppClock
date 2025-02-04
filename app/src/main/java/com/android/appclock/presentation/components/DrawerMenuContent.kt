@@ -1,7 +1,6 @@
 package com.android.appclock.presentation.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
@@ -15,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun DrawerMenuContent(onItemSelected: (String) -> Unit) {
+fun DrawerMenuContent() {
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -29,9 +28,7 @@ fun DrawerMenuContent(onItemSelected: (String) -> Unit) {
             fontSize = 32.sp,
             fontWeight = W900,
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier
-                .padding(top = 32.dp)
-                .clickable { onItemSelected("Item 1") }
+            modifier = Modifier.padding(top = 32.dp)
         )
     }
 }
