@@ -12,6 +12,7 @@ import com.android.appclock.domain.usecase.EditScheduleUseCase
 import com.android.appclock.domain.usecase.GetScheduleByIdUseCase
 import com.android.appclock.domain.usecase.GetSchedulesUseCase
 import com.android.appclock.domain.usecase.ScheduleUseCases
+import com.android.appclock.receiver.AppLaunchReceiver
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -54,5 +55,10 @@ object AppModule {
             deleteSchedule = DeleteScheduleUseCase(repository),
             getScheduleById = GetScheduleByIdUseCase(repository)
         )
+    }
+
+    @Provides
+    fun provideAppLaunchReceiver(repository: ScheduleRepository): AppLaunchReceiver {
+        return AppLaunchReceiver(repository)
     }
 }
