@@ -201,9 +201,11 @@ fun AddEditScheduleScreen(
             textStyle = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
             decorationBox = { innerTextField ->
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
                     if (schedule.description.isNullOrEmpty()) {
                         Text(
                             "Add Details",

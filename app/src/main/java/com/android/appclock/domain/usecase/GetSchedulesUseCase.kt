@@ -1,0 +1,14 @@
+package com.android.appclock.domain.usecase
+
+import com.android.appclock.domain.model.ScheduleEntity
+import com.android.appclock.domain.repository.ScheduleRepository
+import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+
+class GetSchedulesUseCase @Inject constructor(
+    private val repository: ScheduleRepository
+) {
+    operator fun invoke(): Flow<List<ScheduleEntity>> {
+        return repository.getAllSchedules()
+    }
+}
