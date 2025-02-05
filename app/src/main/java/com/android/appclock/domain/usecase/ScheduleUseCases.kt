@@ -5,5 +5,6 @@ data class ScheduleUseCases(
     val addSchedule: AddScheduleUseCase,
     val editSchedule: EditScheduleUseCase,
     val deleteSchedule: DeleteScheduleUseCase,
-    val getScheduleById: GetScheduleByIdUseCase
+    val getScheduleById: GetScheduleByIdUseCase,
+    val deleteScheduleById: DeleteScheduleByIdUseCase
 )

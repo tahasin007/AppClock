@@ -1,12 +1,13 @@
 package com.android.appclock.domain.repository
 
-import com.android.appclock.domain.model.ScheduleEntity
+import com.android.appclock.domain.model.ScheduleAppEntity
 import kotlinx.coroutines.flow.Flow
 
 interface ScheduleRepository {
-    fun getAllSchedules(): Flow<List<ScheduleEntity>>
-    suspend fun insertSchedule(schedule: ScheduleEntity)
-    suspend fun updateSchedule(schedule: ScheduleEntity)
-    suspend fun deleteSchedule(schedule: ScheduleEntity)
-    suspend fun getScheduleById(id: Int): ScheduleEntity?
+    fun getAllSchedules(): Flow<List<ScheduleAppEntity>>
+    suspend fun insertSchedule(schedule: ScheduleAppEntity): Long
+    suspend fun updateSchedule(schedule: ScheduleAppEntity)
+    suspend fun deleteSchedule(schedule: ScheduleAppEntity)
+    suspend fun getScheduleById(id: Int): ScheduleAppEntity?
+    suspend fun deleteScheduleById(id: Int)
 }

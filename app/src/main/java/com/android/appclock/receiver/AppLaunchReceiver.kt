@@ -17,8 +17,8 @@ class AppLaunchReceiver @Inject constructor(
     private val repository: ScheduleRepository
 ) : BroadcastReceiver() {
 
-    override fun onReceive(context: Context, intent: Intent?) {
-        val packageName = intent?.getStringExtra("PACKAGE_NAME") ?: return
+    override fun onReceive(context: Context, intent: Intent) {
+        val packageName = intent.getStringExtra("PACKAGE_NAME") ?: return
         val scheduledId = intent.getIntExtra("SCHEDULE_ID", -1)
 
         val launchIntent = context.packageManager.getLaunchIntentForPackage(packageName)

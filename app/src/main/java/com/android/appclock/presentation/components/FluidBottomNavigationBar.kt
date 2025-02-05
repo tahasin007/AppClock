@@ -41,14 +41,14 @@ fun FluidBottomNavigationBar(
     NavigationBar(
         modifier = Modifier
             .fillMaxWidth()
-            .height(70.dp)
+            .height(90.dp)
             .animateContentSize(),
         containerColor = MaterialTheme.colorScheme.primary
     ) {
         tabs.forEach { tab ->
             val selected = currentRoute == tab.route
             val iconScale by animateFloatAsState(
-                targetValue = if (selected) 1.5f else 1f,
+                targetValue = if (selected) 1.75f else 1f,
                 animationSpec = tween(durationMillis = 500), label = ""
             )
 

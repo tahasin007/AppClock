@@ -43,7 +43,8 @@
         </activity>
 
         <receiver
-            android:name=".AppLaunchReceiver"
+            android:name=".receiver.AppLaunchReceiver"
+            android:enabled="true"
             android:exported="false" />
 
         <service

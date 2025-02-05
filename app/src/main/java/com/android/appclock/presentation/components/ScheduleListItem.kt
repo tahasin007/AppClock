@@ -1,6 +1,7 @@
 package com.android.appclock.presentation.components
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -13,12 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Android
-import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Event
-import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -29,21 +24,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.android.appclock.data.model.ScheduleData
-import com.android.appclock.data.model.ScheduleStatus
+import coil.compose.rememberAsyncImagePainter
+import com.android.appclock.core.common.SchedulesDataUI
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
 @SuppressLint("SimpleDateFormat")
-fun ScheduleListItem(schedule: ScheduleData, onClick: () -> Unit) {
+fun ScheduleListItem(schedule: SchedulesDataUI, onClick: () -> Unit) {
     val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
     val date = try {
         dateFormat.parse(schedule.scheduledDate) ?: Date()
@@ -56,31 +49,13 @@ fun ScheduleListItem(schedule: ScheduleData, onClick: () -> Unit) {
 
     val interactionSource = remember { MutableInteractionSource() }
 
-    val statusIcon: ImageVector = when (schedule.status) {
-        ScheduleStatus.UPCOMING -> Icons.Default.Event
-        ScheduleStatus.CANCELED -> Icons.Default.Cancel
-        ScheduleStatus.LAUNCHED -> Icons.Default.RocketLaunch
-        ScheduleStatus.FAILED -> Icons.Default.Error
-    }
-
-    val statusColor: Color = when (schedule.status) {
-        ScheduleStatus.UPCOMING -> Color.Green
-        ScheduleStatus.CANCELED -> Color.Red
-        ScheduleStatus.LAUNCHED -> Color.Blue
-        ScheduleStatus.FAILED -> Color.Gray
-    }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 12.dp)
             .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            ),
-        shape = RoundedCornerShape(25.dp),
-        colors = CardDefaults.cardColors(
+                interactionSource = interactionSource, indication = null, onClick = onClick
+            ), shape = RoundedCornerShape(25.dp), colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
         )
     ) {
@@ -90,8 +65,9 @@ fun ScheduleListItem(schedule: ScheduleData, onClick: () -> Unit) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.Android,
+            // Left column (app icon)
+            Image(
+                painter = rememberAsyncImagePainter(schedule.appIcon),
                 contentDescription = schedule.appName,
                 modifier = Modifier
                     .size(48.dp)
@@ -102,41 +78,40 @@ fun ScheduleListItem(schedule: ScheduleData, onClick: () -> Unit) {
 
             Spacer(modifier = Modifier.width(12.dp))
 
+            // Middle column (app name, description, time)
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = schedule.appName,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 5.dp)
+                        text = schedule.appName, style = MaterialTheme.typography.bodyLarge.copy(
+                            color = MaterialTheme.colorScheme.primary
+                        ), fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 5.dp)
                     )
 
                     Spacer(modifier = Modifier.width(10.dp))
 
                     Icon(
-                        imageVector = statusIcon,
+                        imageVector = schedule.status.statusIcon,
                         contentDescription = schedule.status.name,
                         modifier = Modifier.size(18.dp),
-                        tint = statusColor
+                        tint = schedule.status.statusColor
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = schedule.status.name,
                         style = MaterialTheme.typography.labelSmall.copy(
-                            color = statusColor,
-                            fontWeight = FontWeight.SemiBold
+                            color = schedule.status.statusColor, fontWeight = FontWeight.SemiBold
                         )
                     )
                 }
 
-                schedule.description?.let {
+                if (!schedule.description.isNullOrEmpty()) {
                     Text(
-                        text = it,
+                        text = schedule.description,
                         style = MaterialTheme.typography.bodySmall.copy(
                             letterSpacing = 0.5.sp,
-                            fontWeight = FontWeight.Light
+                            fontWeight = FontWeight.Light,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
                         ),
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(bottom = 6.dp)
@@ -144,12 +119,13 @@ fun ScheduleListItem(schedule: ScheduleData, onClick: () -> Unit) {
                 }
 
                 Text(
-                    text = schedule.scheduledTime,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = schedule.scheduledTime, style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
                 )
             }
 
+            // Right colum (date, month column)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(start = 12.dp)

@@ -2,8 +2,8 @@ package com.android.appclock.presentation.screens.addeditschedule
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AccessAlarm
@@ -35,17 +34,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.android.appclock.presentation.components.CustomAppBar
+import com.android.appclock.presentation.components.AppBasicTextField
+import com.android.appclock.presentation.components.CustomAppBarEditScreen
 import com.android.appclock.presentation.components.DockedDatePicker
 import com.android.appclock.presentation.components.TimePickerDialog
-import com.android.appclock.utils.CommonUtil.getInstalledApps
+import com.android.appclock.utils.Constants.SCHEDULE_ID_DEFAULT
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -55,26 +53,49 @@ fun AddEditScheduleScreen(
     navController: NavController,
     viewModel: AddEditScheduleViewModel = hiltViewModel()
 ) {
-    val schedule = viewModel.schedule.value
-    val context = LocalContext.current
-    val apps = remember { getInstalledApps(context) }
+    val schedule = viewModel.editScheduleState.value
+    val installedApps = viewModel.installedApps
+
     var expanded by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+
+    val validityState = viewModel.validityState.value
+    val isNewSchedule = schedule.id == SCHEDULE_ID_DEFAULT
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        CustomAppBar(navController)
+        CustomAppBarEditScreen(
+            onBackClick = { navController.popBackStack() },
+            onDeleteClick = {
+                viewModel.onEvent(AddEditScheduleEvent.DeleteSchedule)
+                navController.popBackStack()
+            },
+            onChangeScheduleStatus = {
+                viewModel.onEvent(AddEditScheduleEvent.ChangeScheduleStatus(it))
+            },
+            onSaveClick = {
+                viewModel.onEvent(AddEditScheduleEvent.SaveSchedule)
+                navController.popBackStack()
+            },
+            validityState = validityState,
+            scheduleStatus = schedule.status,
+            isNewSchedule = isNewSchedule
+        )
         Spacer(modifier = Modifier.height(10.dp))
 
-        // App Selection
+        // App Selection View
         Box(modifier = Modifier.fillMaxWidth()) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { expanded = !expanded },
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = { expanded = !expanded }
+                    ),
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(0.5.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -89,7 +110,7 @@ fun AddEditScheduleScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         if (schedule.packageName.isNotEmpty()) {
                             Image(
-                                painter = rememberAsyncImagePainter(schedule.packageName),
+                                painter = rememberAsyncImagePainter(schedule.appIcon),
                                 contentDescription = schedule.appName,
                                 modifier = Modifier.size(24.dp)
                             )
@@ -115,7 +136,7 @@ fun AddEditScheduleScreen(
                     .fillMaxWidth(0.91f)
                     .height(400.dp)
             ) {
-                apps.forEach { app ->
+                installedApps.forEach { app ->
                     DropdownMenuItem(
                         text = { Text(app.appName) },
                         leadingIcon = {
@@ -126,7 +147,7 @@ fun AddEditScheduleScreen(
                             )
                         },
                         onClick = {
-                            viewModel.updateApp(app.appName, app.packageName)
+                            viewModel.onEvent(AddEditScheduleEvent.EnteredApp(app))
                             expanded = false
                         }
                     )
@@ -135,14 +156,20 @@ fun AddEditScheduleScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        DockedDatePicker(LocalDate.parse(schedule.scheduledDate)) { viewModel.updateDate(it.toString()) }
+        DockedDatePicker(LocalDate.parse(schedule.scheduledDate)) {
+            viewModel.onEvent(AddEditScheduleEvent.EnteredDate(it.toString()))
+        }
         Spacer(modifier = Modifier.height(10.dp))
 
         // Time Selection
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { showTimePicker = true },
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = { showTimePicker = true }
+                ),
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(0.5.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -185,38 +212,18 @@ fun AddEditScheduleScreen(
             TimePickerDialog(
                 initialHour = LocalTime.parse(schedule.scheduledTime).hour,
                 initialMinute = LocalTime.parse(schedule.scheduledTime).minute,
-                onTimeSelected = { hour, minute -> viewModel.updateTime(hour, minute) },
+                onTimeSelected = { hour, minute ->
+                    viewModel.onEvent(AddEditScheduleEvent.EnteredTime(hour, minute))
+                },
                 onDismissRequest = { showTimePicker = false }
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        BasicTextField(
-            value = schedule.description ?: "",
-            onValueChange = { viewModel.updateDescription(it) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.background, RoundedCornerShape(12.dp)),
-            textStyle = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface),
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
-            decorationBox = { innerTextField ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    if (schedule.description.isNullOrEmpty()) {
-                        Text(
-                            "Add Details",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                            )
-                        )
-                    }
-                    innerTextField()
-                }
-            }
+        AppBasicTextField(
+            description = schedule.description,
+            onValueChange = { viewModel.onEvent(AddEditScheduleEvent.EnteredDescription(it)) }
         )
     }
 }

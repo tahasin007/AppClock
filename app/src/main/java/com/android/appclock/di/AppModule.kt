@@ -1,5 +1,6 @@
 package com.android.appclock.di
 
+import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.android.appclock.data.repository.ScheduleRepositoryImpl
@@ -7,6 +8,7 @@ import com.android.appclock.data.source.ScheduleDao
 import com.android.appclock.data.source.ScheduleDatabase
 import com.android.appclock.domain.repository.ScheduleRepository
 import com.android.appclock.domain.usecase.AddScheduleUseCase
+import com.android.appclock.domain.usecase.DeleteScheduleByIdUseCase
 import com.android.appclock.domain.usecase.DeleteScheduleUseCase
 import com.android.appclock.domain.usecase.EditScheduleUseCase
 import com.android.appclock.domain.usecase.GetScheduleByIdUseCase
@@ -22,6 +24,10 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+    @Provides
+    fun provideContext(application: Application): Context {
+        return application.applicationContext
+    }
 
     @Provides
     @Singleton
@@ -53,11 +59,13 @@ object AppModule {
             addSchedule = AddScheduleUseCase(repository),
             editSchedule = EditScheduleUseCase(repository),
             deleteSchedule = DeleteScheduleUseCase(repository),
-            getScheduleById = GetScheduleByIdUseCase(repository)
+            getScheduleById = GetScheduleByIdUseCase(repository),
+            deleteScheduleById = DeleteScheduleByIdUseCase(repository)
         )
     }
 
     @Provides
+    @Singleton
     fun provideAppLaunchReceiver(repository: ScheduleRepository): AppLaunchReceiver {
         return AppLaunchReceiver(repository)
     }

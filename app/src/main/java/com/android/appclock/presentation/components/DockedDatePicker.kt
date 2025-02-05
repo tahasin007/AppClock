@@ -21,16 +21,19 @@ fun DockedDatePicker(selectedDate: LocalDate, onDateSelected: (LocalDate) -> Uni
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = selectedDate.toEpochDay() * 86400000
     )
-    // Check the selected date and highlight it if it's in the past
+
+    // Synchronize selectedDate with datePickerState
+    LaunchedEffect(selectedDate) {
+        datePickerState.selectedDateMillis = selectedDate.toEpochDay() * 86400000
+    }
+
+    // Listen for changes in datePickerState
     LaunchedEffect(datePickerState.selectedDateMillis) {
         datePickerState.selectedDateMillis?.let { millis ->
             val selectedLocalDate = Instant.ofEpochMilli(millis)
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate()
-
-            if (selectedLocalDate.isBefore(today)) {
-                onDateSelected(selectedLocalDate)
-            } else {
+            if (selectedLocalDate != selectedDate) {
                 onDateSelected(selectedLocalDate)
             }
         }
@@ -40,8 +43,7 @@ fun DockedDatePicker(selectedDate: LocalDate, onDateSelected: (LocalDate) -> Uni
         title = null,
         state = datePickerState,
         showModeToggle = false,
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         colors = DatePickerDefaults.colors(
             selectedDayContainerColor = if (selectedDate.isBefore(today)) {
                 Color.Red

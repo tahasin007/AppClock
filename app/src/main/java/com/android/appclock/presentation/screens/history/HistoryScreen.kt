@@ -13,7 +13,7 @@ import com.android.appclock.presentation.screens.ScheduleViewModel
 
 @Composable
 fun HistoryScreen(viewModel: ScheduleViewModel) {
-    val schedules = remember { viewModel.schedules }
+    val schedules = remember { viewModel.schedulesState }
 
     Box(
         modifier = Modifier

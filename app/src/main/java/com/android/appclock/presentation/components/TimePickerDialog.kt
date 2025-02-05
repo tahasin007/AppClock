@@ -65,6 +65,7 @@ fun TimePickerDialog(
                     Button(
                         onClick = {
                             onTimeSelected(timeState.hour, timeState.minute)
+                            onDismissRequest()
                         }
                     ) {
                         Text("OK")
