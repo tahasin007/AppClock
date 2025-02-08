@@ -36,7 +36,7 @@ fun HistoryScreen(
                     .padding(10.dp)
             ) {
                 CommonActionBar(
-                    title = "Previous Schedule",
+                    title = "Previous Schedules",
                     onBackClick = {
                         navController.popBackStack()
                     }

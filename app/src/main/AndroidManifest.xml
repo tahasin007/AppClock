@@ -10,14 +10,11 @@
     <!-- required to schedule alarm at exact time-->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
-    <!-- required to run foreground service -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-
+    <!-- required to launch other apps when in background -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- required to show notification for os 13+ -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+<!--    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />-->
 
     <application
         android:name="com.android.appclock.AppClockApp"
@@ -33,7 +30,6 @@
         <activity
             android:name=".AppClockActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.AppClock">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
