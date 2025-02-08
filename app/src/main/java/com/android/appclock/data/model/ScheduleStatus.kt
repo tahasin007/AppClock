@@ -2,10 +2,10 @@ package com.android.appclock.data.model
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Event
-import androidx.compose.material.icons.filled.RocketLaunch
+import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.TimerOff
+import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -26,11 +26,11 @@ enum class ScheduleStatus(
         statusColor = Color.Red
     ),
     LAUNCHED(
-        statusIcon = Icons.Default.RocketLaunch,
-        statusColor = Color.Blue
+        statusIcon = Icons.Outlined.Verified,
+        statusColor = Color(0xFF1B711B)
     ),
     FAILED(
-        statusIcon = Icons.Default.Error,
-        statusColor = Color.Gray
+        statusIcon = Icons.Default.Report,
+        statusColor = Color.Red
     )
 }

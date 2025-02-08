@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.android.appclock.core.common.SchedulesDataUI
+import com.android.appclock.data.model.ScheduleStatus
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -56,7 +57,15 @@ fun ScheduleListItem(schedule: SchedulesDataUI, onClick: () -> Unit) {
             .clickable(
                 interactionSource = interactionSource, indication = null, onClick = onClick
             ), shape = RoundedCornerShape(25.dp), colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
+            containerColor = when (schedule.status) {
+                ScheduleStatus.LAUNCHED -> ScheduleStatus.LAUNCHED.statusColor.copy(
+                    alpha = 0.05f
+                )
+                ScheduleStatus.FAILED -> ScheduleStatus.FAILED.statusColor.copy(
+                    alpha = 0.05f
+                )
+                else -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
+            }
         )
     ) {
         Row(
