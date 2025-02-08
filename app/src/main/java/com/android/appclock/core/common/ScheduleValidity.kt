@@ -1,4 +1,4 @@
-package com.android.appclock.data.model
+package com.android.appclock.core.common
 
 enum class ScheduleValidity(val message: String) {
     VALID(

@@ -9,10 +9,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.appclock.core.common.InstalledAppUI
+import com.android.appclock.core.common.ScheduleValidity
 import com.android.appclock.core.common.SchedulesDataUI
 import com.android.appclock.data.alarm.AlarmScheduler
 import com.android.appclock.data.model.ScheduleStatus
-import com.android.appclock.data.model.ScheduleValidity
 import com.android.appclock.domain.model.ScheduleAppEntity
 import com.android.appclock.domain.usecase.GetInstalledAppsUseCase
 import com.android.appclock.domain.usecase.ScheduleUseCases

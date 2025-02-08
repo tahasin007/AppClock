@@ -21,8 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.android.appclock.core.common.ScheduleValidity
 import com.android.appclock.data.model.ScheduleStatus
-import com.android.appclock.data.model.ScheduleValidity
 
 @Composable
 fun CustomAppBarEditScreen(
