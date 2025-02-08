@@ -3,6 +3,7 @@ package com.android.appclock.di
 import android.app.Application
 import android.content.Context
 import androidx.room.Room
+import com.android.appclock.data.alarm.AlarmScheduler
 import com.android.appclock.data.repository.ScheduleRepositoryImpl
 import com.android.appclock.data.source.ScheduleDao
 import com.android.appclock.data.source.ScheduleDatabase
@@ -14,7 +15,6 @@ import com.android.appclock.domain.usecase.EditScheduleUseCase
 import com.android.appclock.domain.usecase.GetScheduleByIdUseCase
 import com.android.appclock.domain.usecase.GetSchedulesUseCase
 import com.android.appclock.domain.usecase.ScheduleUseCases
-import com.android.appclock.receiver.AppLaunchReceiver
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -66,7 +66,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAppLaunchReceiver(repository: ScheduleRepository): AppLaunchReceiver {
-        return AppLaunchReceiver(repository)
+    fun provideAlarmScheduler(context: Context): AlarmScheduler {
+        return AlarmScheduler(context)
     }
 }

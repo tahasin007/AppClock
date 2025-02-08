@@ -20,7 +20,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.android.appclock.presentation.screens.ScheduleViewModel
 import com.android.appclock.presentation.screens.addeditschedule.AddEditScheduleScreen
 import com.android.appclock.presentation.screens.history.HistoryScreen
 import com.android.appclock.presentation.screens.home.HomeScreen
@@ -28,21 +27,21 @@ import com.android.appclock.utils.Constants.NAV_ARG_SCHEDULE_ID
 import com.android.appclock.utils.Constants.SCHEDULE_ID_INVALID
 
 @Composable
-fun AppNavHost(navController: NavHostController, viewModel: ScheduleViewModel) {
+fun AppNavHost(navController: NavHostController) {
     NavHost(navController = navController, startDestination = Screen.Home.route) {
         composable(
             route = Screen.Home.route,
             enterTransition = { enterTransition() },
             exitTransition = { exitTransition() },
         ) {
-            HomeScreen(navController = navController, viewModel = viewModel)
+            HomeScreen(navController = navController)
         }
         composable(
             route = Screen.History.route,
             enterTransition = { enterTransition() },
             exitTransition = { exitTransition() },
         ) {
-            HistoryScreen(viewModel = viewModel)
+            HistoryScreen(navController = navController)
         }
         composable(
             route = Screen.AddEditSchedule.route + "?$NAV_ARG_SCHEDULE_ID={$NAV_ARG_SCHEDULE_ID}",

@@ -1,30 +1,32 @@
 package com.android.appclock.receiver
 
-import android.app.ActivityManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.android.appclock.data.model.ScheduleStatus
-import com.android.appclock.domain.repository.ScheduleRepository
+import com.android.appclock.di.ScheduleRepositoryEntryPoint
+import com.android.appclock.utils.Constants.ACTION_TRIGGER_ALARM
+import com.android.appclock.utils.Constants.EXTRA_PACKAGE_NAME
+import com.android.appclock.utils.Constants.EXTRA_SCHEDULE_ID
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-class AppLaunchReceiver @Inject constructor(
-    private val repository: ScheduleRepository
-) : BroadcastReceiver() {
+class AppLaunchReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        val packageName = intent.getStringExtra("PACKAGE_NAME") ?: return
-        val scheduledId = intent.getIntExtra("SCHEDULE_ID", -1)
+        val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME) ?: return
+        val scheduledId = intent.getIntExtra(EXTRA_SCHEDULE_ID, -1)
+
+        Log.i(TAG, "onReceive [${intent.action}] for [$packageName][$scheduledId]")
+        if (intent.action != ACTION_TRIGGER_ALARM) return
 
         val launchIntent = context.packageManager.getLaunchIntentForPackage(packageName)
         if (launchIntent == null) {
-            Log.e("AppLaunchReceiver", "Launch intent is null. App might be uninstalled.")
-            updateScheduleStatus(scheduledId, ScheduleStatus.FAILED)
+            Log.e(TAG, "Launch intent is null. App might be uninstalled.")
+            updateScheduleStatus(context, scheduledId, ScheduleStatus.FAILED)
             return
         }
 
@@ -33,21 +35,21 @@ class AppLaunchReceiver @Inject constructor(
             context.startActivity(launchIntent)
 
             CoroutineScope(Dispatchers.IO).launch {
-                delay(1000)
-                val status = if (isAppRunning(context, packageName)) {
-                    ScheduleStatus.LAUNCHED
-                } else {
-                    ScheduleStatus.FAILED
-                }
-                updateScheduleStatus(scheduledId, status)
+                // TODO Need to use UsageStatsManager for more accurate result
+                updateScheduleStatus(context, scheduledId, ScheduleStatus.LAUNCHED)
             }
         } catch (e: Exception) {
-            Log.e("AppLaunchReceiver", "Failed to launch app", e)
-            updateScheduleStatus(scheduledId, ScheduleStatus.FAILED)
+            Log.e(TAG, "Failed to launch app for ${e.message}")
+            updateScheduleStatus(context, scheduledId, ScheduleStatus.FAILED)
         }
     }
 
-    private fun updateScheduleStatus(scheduleId: Int, status: ScheduleStatus) {
+    private fun updateScheduleStatus(context: Context, scheduleId: Int, status: ScheduleStatus) {
+        val repository = EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            ScheduleRepositoryEntryPoint::class.java
+        ).scheduleRepository()
+
         CoroutineScope(Dispatchers.IO).launch {
             val schedule = repository.getScheduleById(scheduleId)
             if (schedule != null) {
@@ -56,10 +58,7 @@ class AppLaunchReceiver @Inject constructor(
         }
     }
 
-    private fun isAppRunning(context: Context, packageName: String): Boolean {
-        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val runningProcesses = activityManager.runningAppProcesses ?: return false
-
-        return runningProcesses.any { it.processName == packageName }
+    companion object {
+        const val TAG = "AppLaunchReceiver"
     }
 }

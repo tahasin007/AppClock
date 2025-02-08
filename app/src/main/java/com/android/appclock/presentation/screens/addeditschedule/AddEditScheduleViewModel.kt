@@ -1,7 +1,6 @@
 package com.android.appclock.presentation.screens.addeditschedule
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -11,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.appclock.core.common.InstalledAppUI
 import com.android.appclock.core.common.SchedulesDataUI
+import com.android.appclock.data.alarm.AlarmScheduler
 import com.android.appclock.data.model.ScheduleStatus
 import com.android.appclock.data.model.ScheduleValidity
 import com.android.appclock.domain.model.ScheduleAppEntity
@@ -34,6 +34,7 @@ import javax.inject.Inject
 class AddEditScheduleViewModel @Inject constructor(
     private val scheduleUseCases: ScheduleUseCases,
     private val installedAppUseCase: GetInstalledAppsUseCase,
+    private val alarmScheduler: AlarmScheduler,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val _editScheduleState = mutableStateOf(SchedulesDataUI())
@@ -152,19 +153,25 @@ class AddEditScheduleViewModel @Inject constructor(
         val time = DateTimeUtil.validateTime(_editScheduleState.value.scheduledTime)
 
         val scheduledEpochMillis = DateTimeUtil.toEpochMillis(date, time)
+        val newSchedule = ScheduleAppEntity(
+            id = _editScheduleState.value.id,
+            appName = _editScheduleState.value.appName,
+            packageName = _editScheduleState.value.packageName,
+            scheduledDateTime = scheduledEpochMillis,
+            description = _editScheduleState.value.description?.trim(),
+            status = _editScheduleState.value.status,
+            appIcon = _editScheduleState.value.appIcon
+        )
 
         viewModelScope.launch {
-            scheduleUseCases.addSchedule(
-                ScheduleAppEntity(
-                    id = _editScheduleState.value.id,
-                    appName = _editScheduleState.value.appName,
-                    packageName = _editScheduleState.value.packageName,
-                    scheduledDateTime = scheduledEpochMillis,
-                    description = _editScheduleState.value.description?.trim(),
-                    status = _editScheduleState.value.status,
-                    appIcon = _editScheduleState.value.appIcon
+            val scheduleId = scheduleUseCases.addSchedule(newSchedule).toInt()
+            if (scheduleId != SCHEDULE_ID_INVALID) {
+                alarmScheduler.scheduleAppLaunch(
+                    scheduleId,
+                    newSchedule.packageName,
+                    newSchedule.scheduledDateTime
                 )
-            )
+            }
         }
     }
 
@@ -235,9 +242,6 @@ class AddEditScheduleViewModel @Inject constructor(
             // If editing an existing schedule, check if any changes were made
             val isUnchanged = _originalEditSchedulesState.value == currentData &&
                     existingSchedules.any { it.id == currentData.id }
-
-            Log.i("AddEditScheduleViewModel", "isUnchanged: $isUnchanged, currentData: $currentData")
-            Log.i("AddEditScheduleViewModel", "existingSchedules: ${_originalEditSchedulesState.value}")
 
             if (isUnchanged) {
                 _validityState.value = ScheduleValidity.NO_NEW_CHANGES

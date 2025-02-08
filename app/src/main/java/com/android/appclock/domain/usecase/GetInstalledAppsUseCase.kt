@@ -22,6 +22,6 @@ class GetInstalledAppsUseCase @Inject constructor(
                 packageName = it.activityInfo.packageName,
                 icon = it.activityInfo.loadIcon(pm).toBitmap()
             )
-        }
+        }.sortedBy { it.appName }
     }
 }

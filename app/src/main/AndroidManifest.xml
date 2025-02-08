@@ -46,11 +46,6 @@
             android:name=".receiver.AppLaunchReceiver"
             android:enabled="true"
             android:exported="false" />
-
-        <service
-            android:name=".service.AppForegroundService"
-            android:exported="false"
-            android:foregroundServiceType="specialUse" />
     </application>
 
 </manifest>
