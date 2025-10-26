@@ -1,11 +1,11 @@
 package com.android.appclock.presentation.screens.home
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
@@ -55,22 +55,22 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
                 }
 
                 else -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(10.dp)
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(10.dp)
                     ) {
-                        LazyColumn(modifier = Modifier.fillMaxSize()) {
-                            items(schedules.size) { index ->
-                                ScheduleListItem(
-                                    schedule = schedules[index],
-                                    onClick = {
-                                        navController.navigate(
-                                            Screen.AddEditSchedule.route + "?$NAV_ARG_SCHEDULE_ID=${schedules[index].id}"
-                                        )
-                                    }
-                                )
-                            }
+                        items(
+                            items = schedules,
+                            key = { schedule -> schedule.id }
+                        ) { schedule ->
+                            ScheduleListItem(
+                                schedule = schedule,
+                                onClick = {
+                                    navController.navigate(
+                                        Screen.AddEditSchedule.route + "?$NAV_ARG_SCHEDULE_ID=${schedule.id}"
+                                    )
+                                }
+                            )
                         }
                     }
                 }

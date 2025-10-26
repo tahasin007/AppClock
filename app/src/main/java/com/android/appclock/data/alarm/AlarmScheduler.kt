@@ -18,23 +18,13 @@ class AlarmScheduler @Inject constructor(
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     fun scheduleAppLaunch(scheduleId: Int, packageName: String, scheduledTime: Long) {
-        Log.i(TAG, "scheduleAppLaunch for [$scheduleId][$packageName][$scheduledTime]")
+        Log.i(TAG, "Scheduling app launch - ID: $scheduleId, Package: $packageName")
 
         val intent = Intent(context, AppLaunchReceiver::class.java).apply {
             action = ACTION_TRIGGER_ALARM
             putExtra(EXTRA_PACKAGE_NAME, packageName)
             putExtra(EXTRA_SCHEDULE_ID, scheduleId)
         }
-
-        val currentTime = System.currentTimeMillis()
-        val triggerAfter = maxOf(scheduledTime - currentTime, 0) / 1000
-
-        val days = triggerAfter / (24 * 60 * 60)
-        val hours = (triggerAfter % (24 * 60 * 60)) / 3600
-        val minutes = (triggerAfter % 3600) / 60
-        val seconds = triggerAfter % 60
-
-        Log.i(TAG, "scheduleAppLaunch in: $days days, $hours hours, $minutes minutes, $seconds seconds")
 
         val pendingIntent = PendingIntent.getBroadcast(
             context,

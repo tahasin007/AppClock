@@ -29,8 +29,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
-import com.android.appclock.core.common.SchedulesDataUI
 import com.android.appclock.data.model.ScheduleStatus
+import com.android.appclock.presentation.common.SchedulesDataUI
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -38,15 +38,17 @@ import java.util.Locale
 @Composable
 @SuppressLint("SimpleDateFormat")
 fun ScheduleListItem(schedule: SchedulesDataUI, onClick: () -> Unit) {
-    val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
-    val date = try {
-        dateFormat.parse(schedule.scheduledDate) ?: Date()
-    } catch (e: Exception) {
-        Date()
+    val (month, day) = remember(schedule.scheduledDate) {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val date = try {
+            dateFormat.parse(schedule.scheduledDate) ?: Date()
+        } catch (e: Exception) {
+            Date()
+        }
+        val month = SimpleDateFormat("MMM", Locale.getDefault()).format(date).uppercase()
+        val day = SimpleDateFormat("dd", Locale.getDefault()).format(date)
+        month to day
     }
-
-    val month = SimpleDateFormat("MMM", Locale.getDefault()).format(date).uppercase()
-    val day = SimpleDateFormat("dd", Locale.getDefault()).format(date)
 
     val interactionSource = remember { MutableInteractionSource() }
 

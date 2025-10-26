@@ -8,21 +8,20 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.appclock.core.common.InstalledAppUI
 import com.android.appclock.core.common.ScheduleValidity
-import com.android.appclock.core.common.SchedulesDataUI
 import com.android.appclock.data.alarm.AlarmScheduler
+import com.android.appclock.data.mapper.ScheduleMapper
 import com.android.appclock.data.model.ScheduleStatus
 import com.android.appclock.domain.model.ScheduleAppEntity
 import com.android.appclock.domain.usecase.GetInstalledAppsUseCase
 import com.android.appclock.domain.usecase.ScheduleUseCases
+import com.android.appclock.presentation.common.InstalledAppUI
+import com.android.appclock.presentation.common.SchedulesDataUI
 import com.android.appclock.utils.Constants.NAV_ARG_SCHEDULE_ID
 import com.android.appclock.utils.Constants.SCHEDULE_ID_INVALID
 import com.android.appclock.utils.DateTimeUtil
 import com.android.appclock.utils.DateTimeUtil.getFormattedDate
-import com.android.appclock.utils.DateTimeUtil.getFormattedDate2
 import com.android.appclock.utils.DateTimeUtil.getFormattedTime
-import com.android.appclock.utils.DateTimeUtil.getFormattedTime2
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
@@ -48,6 +47,12 @@ class AddEditScheduleViewModel @Inject constructor(
 
     private val _schedulesState = mutableStateListOf<SchedulesDataUI>()
     private val _originalEditSchedulesState = mutableStateOf(SchedulesDataUI())
+
+    private val _expanded = mutableStateOf(false)
+    val expanded: State<Boolean> = _expanded
+
+    private val _showTimePicker = mutableStateOf(false)
+    val showTimePicker: State<Boolean> = _showTimePicker
 
     private var getSchedulesJob: Job? = null
 
@@ -187,18 +192,7 @@ class AddEditScheduleViewModel @Inject constructor(
 
         getSchedulesJob = scheduleUseCases.getSchedules()
             .onEach { scheduleEntities ->
-                val uiDataList = scheduleEntities.map { schedule ->
-                    SchedulesDataUI(
-                        appName = schedule.appName,
-                        packageName = schedule.packageName,
-                        scheduledTime = getFormattedTime2(schedule.scheduledDateTime),
-                        scheduledDate = getFormattedDate2(schedule.scheduledDateTime),
-                        description = schedule.description,
-                        status = schedule.status,
-                        appIcon = schedule.appIcon,
-                        id = schedule.id
-                    )
-                }
+                val uiDataList = ScheduleMapper.toUiModelList(scheduleEntities)
                 _schedulesState.clear()
                 _schedulesState.addAll(uiDataList)
             }
@@ -250,5 +244,17 @@ class AddEditScheduleViewModel @Inject constructor(
 
             _validityState.value = ScheduleValidity.VALID
         }
+    }
+
+    fun toggleDropdown() {
+        _expanded.value = !_expanded.value
+    }
+
+    fun showTimePicker() {
+        _showTimePicker.value = true
+    }
+
+    fun hideTimePicker() {
+        _showTimePicker.value = false
     }
 }

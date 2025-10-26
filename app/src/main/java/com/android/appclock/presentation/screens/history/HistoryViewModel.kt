@@ -7,11 +7,10 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.appclock.core.common.FilterState
-import com.android.appclock.core.common.SchedulesDataUI
+import com.android.appclock.data.mapper.ScheduleMapper
 import com.android.appclock.data.model.ScheduleStatus
 import com.android.appclock.domain.usecase.ScheduleUseCases
-import com.android.appclock.utils.DateTimeUtil.getFormattedDate2
-import com.android.appclock.utils.DateTimeUtil.getFormattedTime2
+import com.android.appclock.presentation.common.SchedulesDataUI
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
@@ -50,20 +49,8 @@ class HistoryViewModel @Inject constructor(
 
         getSchedulesJob = useCases.getSchedules()
             .onEach { scheduleEntities ->
-                val uiDataList = scheduleEntities.map { schedule ->
-                    SchedulesDataUI(
-                        appName = schedule.appName,
-                        packageName = schedule.packageName,
-                        scheduledTime = getFormattedTime2(schedule.scheduledDateTime),
-                        scheduledDate = getFormattedDate2(schedule.scheduledDateTime),
-                        description = schedule.description,
-                        status = schedule.status,
-                        appIcon = schedule.appIcon,
-                        id = schedule.id
-                    )
-                }
+                val uiDataList = ScheduleMapper.toUiModelList(scheduleEntities)
                     .filter { it.status == ScheduleStatus.LAUNCHED || it.status == ScheduleStatus.FAILED }
-
 
                 _allSchedules.clear()
                 _allSchedules.addAll(uiDataList)

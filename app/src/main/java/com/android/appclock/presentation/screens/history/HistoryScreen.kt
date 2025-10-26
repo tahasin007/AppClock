@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -23,8 +24,7 @@ import com.android.appclock.presentation.components.ScheduleListItem
 
 @Composable
 fun HistoryScreen(
-    navController: NavController,
-    viewModel: HistoryViewModel = hiltViewModel()
+    navController: NavController, viewModel: HistoryViewModel = hiltViewModel()
 ) {
     // Fetch all past schedules (for app that were launched of failed) from the ViewModel
     val allSchedules = viewModel.allSchedules
@@ -44,11 +44,9 @@ fun HistoryScreen(
                     .padding(10.dp)
             ) {
                 CommonActionBar(
-                    title = "Previous Schedules",
-                    onBackClick = {
+                    title = "Previous Schedules", onBackClick = {
                         navController.popBackStack()
-                    }
-                )
+                    })
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -62,21 +60,20 @@ fun HistoryScreen(
                     FilterButton(
                         text = "Launched",
                         isSelected = selectedFilter.scheduleStatus == ScheduleStatus.LAUNCHED,
-                        onClick = { viewModel.onEvent(HistoryScreenEvent.ShowLaunched) }
-                    )
+                        onClick = { viewModel.onEvent(HistoryScreenEvent.ShowLaunched) })
 
                     FilterButton(
                         text = "Failed",
                         isSelected = selectedFilter.scheduleStatus == ScheduleStatus.FAILED,
-                        onClick = { viewModel.onEvent(HistoryScreenEvent.ShowFailed) }
-                    )
+                        onClick = { viewModel.onEvent(HistoryScreenEvent.ShowFailed) })
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 LazyColumn {
-                    items(schedules.size) {
-                        ScheduleListItem(schedule = schedules[it]) {}
+                    items(
+                        items = schedules, key = { schedule -> schedule.id }) { schedule ->
+                        ScheduleListItem(schedule = schedule) {}
                     }
                 }
             }

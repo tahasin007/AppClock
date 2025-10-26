@@ -1,7 +1,7 @@
 package com.android.appclock.presentation.screens.addeditschedule
 
-import com.android.appclock.core.common.InstalledAppUI
 import com.android.appclock.data.model.ScheduleStatus
+import com.android.appclock.presentation.common.InstalledAppUI
 
 sealed class AddEditScheduleEvent {
     data class EnteredApp(val app: InstalledAppUI) : AddEditScheduleEvent()

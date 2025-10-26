@@ -3,7 +3,7 @@ package com.android.appclock.domain.usecase
 import android.content.Context
 import android.content.Intent
 import androidx.core.graphics.drawable.toBitmap
-import com.android.appclock.core.common.InstalledAppUI
+import com.android.appclock.presentation.common.InstalledAppUI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject

@@ -1,4 +1,4 @@
-package com.android.appclock.core.common
+package com.android.appclock.presentation.common
 
 import android.graphics.Bitmap
 
