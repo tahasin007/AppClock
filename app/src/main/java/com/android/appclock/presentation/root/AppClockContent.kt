@@ -33,6 +33,7 @@ fun AppClockContent(viewModel: PermissionViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val showExactAlarmDialog = viewModel.showExactAlarmDialog.value
     val showOverlayDialog = viewModel.showOverlayDialog.value
+    val showUsageStatsDialog = viewModel.showUsageStatsDialog.value
 
     LaunchedEffect(Unit) {
         viewModel.checkPermissions()
@@ -75,6 +76,16 @@ fun AppClockContent(viewModel: PermissionViewModel = hiltViewModel()) {
                 title = "Allow Overlay Permission",
                 message = "To launch apps when AppClock is in background, please allow overlay permission.",
                 onConfirm = { viewModel.openOverlaySettings(context) },
+                onDismiss = { viewModel.dismissDialogs() }
+            )
+        }
+
+        // Show Usage Stats Permission Dialog
+        if (showUsageStatsDialog) {
+            PermissionDialog(
+                title = "Allow Usage Stats Permission",
+                message = "To track app launches accurately, please allow usage stats permission.",
+                onConfirm = { viewModel.openUsageStatsSettings(context) },
                 onDismiss = { viewModel.dismissDialogs() }
             )
         }

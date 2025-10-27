@@ -10,6 +10,8 @@ running.
 - **Modify or Cancel Schedules**: Edit or delete existing schedules
 - **Multiple Schedule Support**: Schedule multiple apps at once
 - **Execution Tracking**: Maintain a record of scheduled execution status
+- **Accurate Tracking**: UsageStatsManager for accurate tracking of app launch
+- **Launch Notifications**: Send notification after app launch
 
 ## Tech Stack
 
@@ -22,6 +24,8 @@ running.
 
 - SCHEDULE_EXACT_ALARM: To schedule alarm at exact time
 - SYSTEM_ALERT_WINDOW: To launch other apps when in background
+- PACKAGE_USAGE_STATS: To track app launches accurately
+- POST_NOTIFICATIONS: To show notification after app launch
 
 > **Note:** Permissions may not be requested from the user depending on the OS version or phone model.
 
@@ -36,7 +40,5 @@ running.
 ## Future Improvements
 
 - Support for recurring schedules
-- Send notification after app launch
 - Filtering and sorting of schedules
 - Additional customization settings
-- UsageStatsManager for accurate tracking of app launch

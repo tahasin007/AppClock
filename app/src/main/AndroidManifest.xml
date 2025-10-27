@@ -14,7 +14,12 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- required to show notification for os 13+ -->
-<!--    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />-->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- required to track app usage -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:name="com.android.appclock.AppClockApp"

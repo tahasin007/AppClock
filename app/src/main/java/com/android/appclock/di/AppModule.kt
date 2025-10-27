@@ -15,6 +15,7 @@ import com.android.appclock.domain.usecase.EditScheduleUseCase
 import com.android.appclock.domain.usecase.GetScheduleByIdUseCase
 import com.android.appclock.domain.usecase.GetSchedulesUseCase
 import com.android.appclock.domain.usecase.ScheduleUseCases
+import com.android.appclock.tracking.AppLaunchTracker
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -68,5 +69,11 @@ object AppModule {
     @Singleton
     fun provideAlarmScheduler(context: Context): AlarmScheduler {
         return AlarmScheduler(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAppLaunchTracker(application: Application): AppLaunchTracker {
+        return AppLaunchTracker(application)
     }
 }
