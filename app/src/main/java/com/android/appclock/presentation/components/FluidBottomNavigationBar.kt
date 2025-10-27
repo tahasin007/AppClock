@@ -1,6 +1,5 @@
 package com.android.appclock.presentation.components
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,7 +25,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun FluidBottomNavigationBar(
     navController: NavHostController,
-    drawerState: DrawerState
+    drawerState: DrawerState,
+    modifier: Modifier = Modifier
 ) {
     val tabs = listOf(
         BottomBarTab.Settings,
@@ -39,17 +39,20 @@ fun FluidBottomNavigationBar(
     val scope = rememberCoroutineScope()
 
     NavigationBar(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .height(90.dp)
-            .animateContentSize(),
+            .height(90.dp),
         containerColor = MaterialTheme.colorScheme.primary
     ) {
         tabs.forEach { tab ->
             val selected = currentRoute == tab.route
             val iconScale by animateFloatAsState(
-                targetValue = if (selected) 1.75f else 1f,
-                animationSpec = tween(durationMillis = 500), label = ""
+                targetValue = if (selected) 1.3f else 1f,
+                animationSpec = tween(
+                    durationMillis = 350,
+                    easing = androidx.compose.animation.core.FastOutSlowInEasing
+                ), 
+                label = ""
             )
 
             NavigationBarItem(

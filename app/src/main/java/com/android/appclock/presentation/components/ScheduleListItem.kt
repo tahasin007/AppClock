@@ -3,6 +3,9 @@ package com.android.appclock.presentation.components
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
@@ -14,12 +17,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,7 +43,12 @@ import java.util.Locale
 
 @Composable
 @SuppressLint("SimpleDateFormat")
-fun ScheduleListItem(schedule: SchedulesDataUI, onClick: () -> Unit) {
+fun ScheduleListItem(
+    schedule: SchedulesDataUI,
+    onClick: () -> Unit,
+    isSelected: Boolean = false,
+    showCheckbox: Boolean = false
+) {
     val (month, day) = remember(schedule.scheduledDate) {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val date = try {
@@ -51,6 +62,13 @@ fun ScheduleListItem(schedule: SchedulesDataUI, onClick: () -> Unit) {
     }
 
     val interactionSource = remember { MutableInteractionSource() }
+    
+    // Animate border width
+    val borderWidth by animateDpAsState(
+        targetValue = if (isSelected) 2.dp else 0.dp,
+        animationSpec = tween(durationMillis = 200),
+        label = "borderWidth"
+    )
 
     Card(
         modifier = Modifier
@@ -58,12 +76,22 @@ fun ScheduleListItem(schedule: SchedulesDataUI, onClick: () -> Unit) {
             .padding(vertical = 8.dp, horizontal = 12.dp)
             .clickable(
                 interactionSource = interactionSource, indication = null, onClick = onClick
-            ), shape = RoundedCornerShape(25.dp), colors = CardDefaults.cardColors(
-            containerColor = when (schedule.status) {
-                ScheduleStatus.LAUNCHED -> ScheduleStatus.LAUNCHED.statusColor.copy(
+            )
+            .then(
+                Modifier.border(
+                    width = borderWidth,
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(25.dp)
+                )
+            ),
+        shape = RoundedCornerShape(25.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = when {
+                isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                schedule.status == ScheduleStatus.LAUNCHED -> ScheduleStatus.LAUNCHED.statusColor.copy(
                     alpha = 0.05f
                 )
-                ScheduleStatus.FAILED -> ScheduleStatus.FAILED.statusColor.copy(
+                schedule.status == ScheduleStatus.FAILED -> ScheduleStatus.FAILED.statusColor.copy(
                     alpha = 0.05f
                 )
                 else -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
@@ -76,9 +104,31 @@ fun ScheduleListItem(schedule: SchedulesDataUI, onClick: () -> Unit) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Checkbox/Selection Indicator
+            if (showCheckbox) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = if (isSelected) "Selected" else "Not Selected",
+                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                    modifier = Modifier
+                        .size(24.dp)
+                        .padding(end = 12.dp)
+                )
+            }
+
             // Left column (app icon)
-            Image(
-                painter = rememberAsyncImagePainter(schedule.appIcon),
+            schedule.appIcon?.let { iconBitmap ->
+                Image(
+                    painter = rememberAsyncImagePainter(iconBitmap),
+                    contentDescription = schedule.appName,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                        .padding(8.dp)
+                )
+            } ?: Image(
+                painter = rememberAsyncImagePainter(model = null),
                 contentDescription = schedule.appName,
                 modifier = Modifier
                     .size(48.dp)

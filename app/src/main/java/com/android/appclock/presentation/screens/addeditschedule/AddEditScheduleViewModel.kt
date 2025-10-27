@@ -55,12 +55,13 @@ class AddEditScheduleViewModel @Inject constructor(
     val showTimePicker: State<Boolean> = _showTimePicker
 
     private var getSchedulesJob: Job? = null
+    private var installedAppsLoaded = false
 
     init {
         val scheduleId = savedStateHandle.get<Int>(NAV_ARG_SCHEDULE_ID)
-        getSchedules()
         setScheduleState(scheduleId)
-        getInstalledApps()
+        // Don't fetch schedules immediately - only when needed for validation
+        // Don't load installed apps on init - load lazily
     }
 
     fun onEvent(event: AddEditScheduleEvent) {
@@ -125,8 +126,12 @@ class AddEditScheduleViewModel @Inject constructor(
                     scheduledDate = getFormattedDate(currentDateTime),
                 )
             }
-            validateEditSchedule()
+            // Don't validate immediately - defer to when screen is shown
         }
+    }
+    
+    fun startValidation() {
+        validateEditSchedule()
     }
 
     private fun deleteSchedule() {
@@ -180,23 +185,26 @@ class AddEditScheduleViewModel @Inject constructor(
         }
     }
 
-    private fun getInstalledApps() {
-        viewModelScope.launch {
-            _installedApps.clear()
-            _installedApps.addAll(installedAppUseCase.execute())
+    fun loadInstalledAppsIfNeeded() {
+        if (!installedAppsLoaded) {
+            viewModelScope.launch {
+                installedAppsLoaded = true
+                _installedApps.clear()
+                _installedApps.addAll(installedAppUseCase.execute())
+            }
         }
     }
 
-    private fun getSchedules() {
-        getSchedulesJob?.cancel()
-
-        getSchedulesJob = scheduleUseCases.getSchedules()
-            .onEach { scheduleEntities ->
-                val uiDataList = ScheduleMapper.toUiModelList(scheduleEntities)
-                _schedulesState.clear()
-                _schedulesState.addAll(uiDataList)
-            }
-            .launchIn(viewModelScope)
+    private fun loadSchedulesIfNeeded() {
+        if (getSchedulesJob == null) {
+            getSchedulesJob = scheduleUseCases.getSchedules()
+                .onEach { scheduleEntities ->
+                    val uiDataList = ScheduleMapper.toUiModelList(scheduleEntities)
+                    _schedulesState.clear()
+                    _schedulesState.addAll(uiDataList)
+                }
+                .launchIn(viewModelScope)
+        }
     }
 
     private fun validateEditSchedule() {
@@ -218,7 +226,11 @@ class AddEditScheduleViewModel @Inject constructor(
             return
         }
 
+        // Load schedules only when validating (lazy)
+        loadSchedulesIfNeeded()
+
         viewModelScope.launch {
+            // Wait for schedules to load if not already loaded
             val existingSchedules = _schedulesState
 
             // Check if another schedule exists with the same package & time

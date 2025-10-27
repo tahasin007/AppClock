@@ -36,9 +36,3 @@ running.
   <img src="./assets/edit_screen.jpg" alt="Edit screen for modifying a scheduled app" width="200" />
   <img src="./assets/executed_schedules.jpg" alt="History screen showing executed schedules" width="200" />
 </p>
-
-## Future Improvements
-
-- Support for recurring schedules
-- Filtering and sorting of schedules
-- Additional customization settings

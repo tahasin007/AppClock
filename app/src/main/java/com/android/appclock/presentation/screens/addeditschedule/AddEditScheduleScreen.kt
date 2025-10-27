@@ -17,6 +17,8 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -37,6 +39,13 @@ fun AddEditScheduleScreen(
     navController: NavController,
     viewModel: AddEditScheduleViewModel = hiltViewModel()
 ) {
+    // Load installed apps lazily only when needed
+    LaunchedEffect(Unit) {
+        viewModel.loadInstalledAppsIfNeeded()
+        // Start validation after screen is composable
+        viewModel.startValidation()
+    }
+    
     val schedule = viewModel.editScheduleState.value
     val installedApps = viewModel.installedApps
 
@@ -86,15 +95,18 @@ fun AddEditScheduleScreen(
                     .fillMaxWidth(0.91f)
                     .height(400.dp)
             ) {
-                installedApps.forEach { app ->
+                val displayedApps = remember(installedApps) { installedApps.take(100) }
+                displayedApps.forEach { app ->
                     DropdownMenuItem(
                         text = { Text(app.appName) },
                         leadingIcon = {
-                            Image(
-                                painter = rememberAsyncImagePainter(app.icon),
-                                contentDescription = app.appName,
-                                modifier = Modifier.size(24.dp)
-                            )
+                            app.icon?.let { iconBitmap ->
+                                Image(
+                                    painter = rememberAsyncImagePainter(iconBitmap),
+                                    contentDescription = app.appName,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
                         },
                         onClick = {
                             viewModel.onEvent(AddEditScheduleEvent.EnteredApp(app))

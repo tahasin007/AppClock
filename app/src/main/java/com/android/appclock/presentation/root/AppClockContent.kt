@@ -1,5 +1,7 @@
 package com.android.appclock.presentation.root
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -10,7 +12,11 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -34,6 +40,13 @@ fun AppClockContent(viewModel: PermissionViewModel = hiltViewModel()) {
     val showExactAlarmDialog = viewModel.showExactAlarmDialog.value
     val showOverlayDialog = viewModel.showOverlayDialog.value
     val showUsageStatsDialog = viewModel.showUsageStatsDialog.value
+    
+    // Track selection mode in history screen
+    var isHistorySelectionMode by remember { mutableStateOf(false) }
+
+    fun onHistorySelectionModeChange(isSelectionMode: Boolean) {
+        isHistorySelectionMode = isSelectionMode
+    }
 
     LaunchedEffect(Unit) {
         viewModel.checkPermissions()
@@ -44,17 +57,34 @@ fun AppClockContent(viewModel: PermissionViewModel = hiltViewModel()) {
         drawerContent = { DrawerMenuContent() }, content = {
             Scaffold(
                 bottomBar = {
-                    if (currentRoute == null || currentRoute.contains(Screen.Home.route)
-                        || currentRoute.contains(Screen.History.route)
-                    ) {
+                    // Determine nav bar visibility based on current route
+                    val showBottomNav = currentRoute?.let { 
+                        it.contains(Screen.Home.route) || it.contains(Screen.History.route)
+                    } ?: true
+                    
+                    // Animate alpha to 0 when on AddEditSchedule, to 1 on Home/History
+                    val navBarAlpha by animateFloatAsState(
+                        targetValue = if (showBottomNav && !isHistorySelectionMode) 1f else 0f,
+                        animationSpec = tween(200),
+                        label = "navBarAlpha"
+                    )
+                    
+                    // Always render nav bar but with alpha animation to keep layout stable
+                    if (navBarAlpha > 0f) {
                         FluidBottomNavigationBar(
                             navController = navController,
-                            drawerState = drawerState
+                            drawerState = drawerState,
+                            modifier = Modifier.alpha(navBarAlpha)
                         )
                     }
                 }) {
                 Box(modifier = Modifier.padding(it)) {
-                    AppNavHost(navController = navController)
+                    AppNavHost(
+                        navController = navController,
+                        onHistorySelectionModeChange = { isSelectionMode ->
+                            onHistorySelectionModeChange(isSelectionMode)
+                        }
+                    )
                 }
             }
         })

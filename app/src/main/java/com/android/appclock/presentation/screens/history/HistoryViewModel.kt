@@ -15,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,6 +34,12 @@ class HistoryViewModel @Inject constructor(
     private val _selectedFilter = mutableStateOf(FilterState())
     var selectedFilter: State<FilterState> = _selectedFilter
 
+    private val _selectedScheduleIds = mutableStateListOf<Int>()
+    val selectedScheduleIds: SnapshotStateList<Int> = _selectedScheduleIds
+
+    val isSelectionMode: Boolean
+        get() = _selectedScheduleIds.isNotEmpty()
+
     init {
         getSchedules()
     }
@@ -41,6 +48,30 @@ class HistoryViewModel @Inject constructor(
         when (event) {
             is HistoryScreenEvent.ShowLaunched -> applyFilter(ScheduleStatus.LAUNCHED)
             is HistoryScreenEvent.ShowFailed -> applyFilter(ScheduleStatus.FAILED)
+            is HistoryScreenEvent.ToggleSelection -> toggleSelection(event.scheduleId)
+            is HistoryScreenEvent.ClearSelection -> clearSelection()
+            is HistoryScreenEvent.DeleteSelected -> deleteSelectedSchedules()
+        }
+    }
+
+    private fun toggleSelection(scheduleId: Int) {
+        if (_selectedScheduleIds.contains(scheduleId)) {
+            _selectedScheduleIds.remove(scheduleId)
+        } else {
+            _selectedScheduleIds.add(scheduleId)
+        }
+    }
+
+    private fun clearSelection() {
+        _selectedScheduleIds.clear()
+    }
+
+    private fun deleteSelectedSchedules() {
+        viewModelScope.launch {
+            _selectedScheduleIds.forEach { scheduleId ->
+                useCases.deleteScheduleById(scheduleId)
+            }
+            _selectedScheduleIds.clear()
         }
     }
 

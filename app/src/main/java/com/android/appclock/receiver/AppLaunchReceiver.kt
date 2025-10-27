@@ -70,24 +70,33 @@ class AppLaunchReceiver : BroadcastReceiver() {
                 AppLaunchTrackerEntryPoint::class.java
             ).appLaunchTracker()
 
+            val repository = EntryPointAccessors.fromApplication(
+                context.applicationContext,
+                ScheduleRepositoryEntryPoint::class.java
+            ).scheduleRepository()
+            
             val launchTime = System.currentTimeMillis()
             val isLaunched = appLaunchTracker.verifyAppLaunched(packageName, launchTime - 5000)
 
+            // Get schedule to retrieve app name
+            val schedule = repository.getScheduleById(scheduleId)
+            val appName = schedule?.appName ?: packageName
+            
             if (isLaunched) {
                 Log.i(TAG, "App launch verified for: $packageName")
                 updateScheduleStatus(context, scheduleId, ScheduleStatus.LAUNCHED)
-                sendNotification(context, packageName, true)
+                sendNotification(context, appName, true)
             } else {
                 Log.e(TAG, "Could not verify app launch for: $packageName")
                 updateScheduleStatus(context, scheduleId, ScheduleStatus.FAILED)
-                sendNotification(context, packageName, false)
+                sendNotification(context, appName, false)
             }
 
             pendingResult.finish()
         }
     }
 
-    private fun sendNotification(context: Context, packageName: String, success: Boolean) {
+    private fun sendNotification(context: Context, appName: String, success: Boolean) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "app_launch_channel"
 
@@ -102,9 +111,9 @@ class AppLaunchReceiver : BroadcastReceiver() {
 
         val title = if (success) "App Launched" else "App Launch Failed"
         val text = if (success) {
-            "Successfully launched $packageName"
+            "Successfully launched $appName"
         } else {
-            "Failed to verify launch of $packageName"
+            "Failed to verify launch of $appName"
         }
 
         val notification = NotificationCompat.Builder(context, channelId)
