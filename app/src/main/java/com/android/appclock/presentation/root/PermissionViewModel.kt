@@ -5,48 +5,59 @@ import android.app.AppOpsManager
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Process
 import android.provider.Settings
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+
+enum class AppPermission {
+    EXACT_ALARM,
+    OVERLAY,
+    USAGE_STATS
+}
 
 @HiltViewModel
 class PermissionViewModel @Inject constructor(
     private val application: Application
 ) : ViewModel() {
 
-    private val _showExactAlarmDialog = mutableStateOf(false)
-    val showExactAlarmDialog: State<Boolean> = _showExactAlarmDialog
+    private var missingPermissionsQueue: List<AppPermission> = emptyList()
 
-    private val _showOverlayDialog = mutableStateOf(false)
-    val showOverlayDialog: State<Boolean> = _showOverlayDialog
-
-    private val _showUsageStatsDialog = mutableStateOf(false)
-    val showUsageStatsDialog: State<Boolean> = _showUsageStatsDialog
+    private val _currentPermissionDialog = mutableStateOf<AppPermission?>(null)
+    val currentPermissionDialog: State<AppPermission?> = _currentPermissionDialog
 
     fun checkPermissions() {
+        val missingPermissions = mutableListOf<AppPermission>()
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmPermissionGranted()) {
-            _showExactAlarmDialog.value = true
+            missingPermissions.add(AppPermission.EXACT_ALARM)
         }
 
         if (!overlayPermissionGranted()) {
-            _showOverlayDialog.value = true
+            missingPermissions.add(AppPermission.OVERLAY)
         }
 
         if (!usageStatsPermissionGranted()) {
-            _showUsageStatsDialog.value = true
+            missingPermissions.add(AppPermission.USAGE_STATS)
         }
+
+        missingPermissionsQueue = missingPermissions
+        _currentPermissionDialog.value = missingPermissionsQueue.firstOrNull()
     }
 
-    fun dismissDialogs() {
-        _showExactAlarmDialog.value = false
-        _showOverlayDialog.value = false
-        _showUsageStatsDialog.value = false
+    fun dismissCurrentDialog() {
+        val currentPermission = _currentPermissionDialog.value ?: return
+        val currentIndex = missingPermissionsQueue.indexOf(currentPermission)
+        _currentPermissionDialog.value = missingPermissionsQueue.drop(currentIndex + 1).firstOrNull()
+    }
+
+    private fun hideCurrentDialog() {
+        _currentPermissionDialog.value = null
     }
 
     private fun alarmPermissionGranted(): Boolean {
@@ -73,25 +84,25 @@ class PermissionViewModel @Inject constructor(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val intent = Intent(
                 Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
-                Uri.parse("package:${context.packageName}")
+                "package:${context.packageName}".toUri()
             )
             context.startActivity(intent)
         }
-        dismissDialogs()
+        hideCurrentDialog()
     }
 
     fun openOverlaySettings(context: Context) {
         val intent = Intent(
             Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-            Uri.parse("package:${context.packageName}")
+            "package:${context.packageName}".toUri()
         )
         context.startActivity(intent)
-        dismissDialogs()
+        hideCurrentDialog()
     }
 
     fun openUsageStatsSettings(context: Context) {
         val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
         context.startActivity(intent)
-        dismissDialogs()
+        hideCurrentDialog()
     }
 }

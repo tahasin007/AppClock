@@ -1,1 +1,30 @@
-/build
+# Gradle
+.gradle/
+
+# Build
+build/
+
+# Local config
+local.properties
+
+# IDE
+.idea/
+*.iml
+
+# NDK
+.externalNativeBuild/
+.cxx/
+
+# Captures
+captures/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Keystore files
+*.jks
+*.keystore

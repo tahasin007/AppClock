@@ -10,6 +10,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,6 +19,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -37,9 +41,8 @@ fun AppClockContent(viewModel: PermissionViewModel = hiltViewModel()) {
     val currentRoute = currentBackStackEntry?.destination?.route
 
     val context = LocalContext.current
-    val showExactAlarmDialog = viewModel.showExactAlarmDialog.value
-    val showOverlayDialog = viewModel.showOverlayDialog.value
-    val showUsageStatsDialog = viewModel.showUsageStatsDialog.value
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val currentPermissionDialog = viewModel.currentPermissionDialog.value
     
     // Track selection mode in history screen
     var isHistorySelectionMode by remember { mutableStateOf(false) }
@@ -50,6 +53,18 @@ fun AppClockContent(viewModel: PermissionViewModel = hiltViewModel()) {
 
     LaunchedEffect(Unit) {
         viewModel.checkPermissions()
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.checkPermissions()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     ModalNavigationDrawer(
@@ -90,33 +105,30 @@ fun AppClockContent(viewModel: PermissionViewModel = hiltViewModel()) {
         })
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Show Exact Alarm Dialog
-        if (showExactAlarmDialog) {
+        if (currentPermissionDialog == AppPermission.EXACT_ALARM) {
             PermissionDialog(
                 title = "Allow Exact Alarm",
                 message = "To launch apps at proper time, please allow \"Alarms and reminders\" permission.",
                 onConfirm = { viewModel.openExactAlarmSettings(context) },
-                onDismiss = { viewModel.dismissDialogs() }
+                onDismiss = { viewModel.dismissCurrentDialog() }
             )
         }
 
-        // Show Overlay Permission Dialog
-        if (showOverlayDialog) {
+        if (currentPermissionDialog == AppPermission.OVERLAY) {
             PermissionDialog(
                 title = "Allow Overlay Permission",
                 message = "To launch apps when AppClock is in background, please allow overlay permission.",
                 onConfirm = { viewModel.openOverlaySettings(context) },
-                onDismiss = { viewModel.dismissDialogs() }
+                onDismiss = { viewModel.dismissCurrentDialog() }
             )
         }
 
-        // Show Usage Stats Permission Dialog
-        if (showUsageStatsDialog) {
+        if (currentPermissionDialog == AppPermission.USAGE_STATS) {
             PermissionDialog(
                 title = "Allow Usage Stats Permission",
                 message = "To track app launches accurately, please allow usage stats permission.",
                 onConfirm = { viewModel.openUsageStatsSettings(context) },
-                onDismiss = { viewModel.dismissDialogs() }
+                onDismiss = { viewModel.dismissCurrentDialog() }
             )
         }
     }
