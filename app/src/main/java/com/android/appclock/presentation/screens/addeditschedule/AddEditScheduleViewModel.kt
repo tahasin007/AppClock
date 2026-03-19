@@ -17,6 +17,7 @@ import com.android.appclock.domain.usecase.GetInstalledAppsUseCase
 import com.android.appclock.domain.usecase.ScheduleUseCases
 import com.android.appclock.presentation.common.InstalledAppUI
 import com.android.appclock.presentation.common.SchedulesDataUI
+import com.android.appclock.utils.Constants.SCHEDULE_ID_DEFAULT
 import com.android.appclock.utils.Constants.NAV_ARG_SCHEDULE_ID
 import com.android.appclock.utils.Constants.SCHEDULE_ID_INVALID
 import com.android.appclock.utils.DateTimeUtil
@@ -136,7 +137,11 @@ class AddEditScheduleViewModel @Inject constructor(
 
     private fun deleteSchedule() {
         viewModelScope.launch {
-            scheduleUseCases.deleteScheduleById(_editScheduleState.value.id)
+            val scheduleId = _editScheduleState.value.id
+            if (scheduleId != SCHEDULE_ID_DEFAULT && scheduleId != SCHEDULE_ID_INVALID) {
+                alarmScheduler.cancelScheduledLaunch(scheduleId)
+                scheduleUseCases.deleteScheduleById(scheduleId)
+            }
         }
     }
 
@@ -174,13 +179,30 @@ class AddEditScheduleViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            val scheduleId = scheduleUseCases.addSchedule(newSchedule).toInt()
-            if (scheduleId != SCHEDULE_ID_INVALID) {
-                alarmScheduler.scheduleAppLaunch(
-                    scheduleId,
-                    newSchedule.packageName,
-                    newSchedule.scheduledDateTime
-                )
+            val currentId = _editScheduleState.value.id
+            val isEditingExisting = currentId != SCHEDULE_ID_DEFAULT && currentId != SCHEDULE_ID_INVALID
+
+            if (isEditingExisting) {
+                // Prevent stale alarms from old time/status when editing.
+                alarmScheduler.cancelScheduledLaunch(currentId)
+                scheduleUseCases.editSchedule(newSchedule.copy(id = currentId))
+
+                if (newSchedule.status == ScheduleStatus.UPCOMING) {
+                    alarmScheduler.scheduleAppLaunch(
+                        currentId,
+                        newSchedule.packageName,
+                        newSchedule.scheduledDateTime
+                    )
+                }
+            } else {
+                val scheduleId = scheduleUseCases.addSchedule(newSchedule).toInt()
+                if (scheduleId != SCHEDULE_ID_INVALID && newSchedule.status == ScheduleStatus.UPCOMING) {
+                    alarmScheduler.scheduleAppLaunch(
+                        scheduleId,
+                        newSchedule.packageName,
+                        newSchedule.scheduledDateTime
+                    )
+                }
             }
         }
     }
