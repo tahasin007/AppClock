@@ -5,14 +5,13 @@ import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.android.appclock.R
 import com.android.appclock.data.model.ScheduleStatus
 import com.android.appclock.di.AppLaunchTrackerEntryPoint
 import com.android.appclock.di.ScheduleRepositoryEntryPoint
-import com.android.appclock.tracking.AppLaunchTracker
+import com.android.appclock.domain.repository.ScheduleRepository
 import com.android.appclock.utils.Constants.ACTION_TRIGGER_ALARM
 import com.android.appclock.utils.Constants.EXTRA_PACKAGE_NAME
 import com.android.appclock.utils.Constants.EXTRA_SCHEDULE_ID
@@ -38,8 +37,12 @@ class AppLaunchReceiver : BroadcastReceiver() {
         if (launchIntent == null) {
             Log.e(TAG, "Launch intent is null. App might be uninstalled.")
             CoroutineScope(Dispatchers.IO).launch {
-                updateScheduleStatus(context, scheduledId, ScheduleStatus.FAILED)
-                pendingResult.finish()
+                try {
+                    val repository = getRepository(context)
+                    updateScheduleStatus(repository, scheduledId, ScheduleStatus.FAILED)
+                } finally {
+                    pendingResult.finish()
+                }
             }
             return
         }
@@ -50,49 +53,52 @@ class AppLaunchReceiver : BroadcastReceiver() {
             Log.i(TAG, "App launched successfully: $packageName")
 
             // Verify launch using UsageStatsManager
-            verifyAndUpdateStatus(context, packageName, scheduledId, pendingResult)
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    verifyAndUpdateStatus(context, packageName, scheduledId)
+                } finally {
+                    pendingResult.finish()
+                }
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to launch app: ${e.message}")
             CoroutineScope(Dispatchers.IO).launch {
-                updateScheduleStatus(context, scheduledId, ScheduleStatus.FAILED)
-                pendingResult.finish()
+                try {
+                    val repository = getRepository(context)
+                    updateScheduleStatus(repository, scheduledId, ScheduleStatus.FAILED)
+                } finally {
+                    pendingResult.finish()
+                }
             }
         }
     }
 
-    private fun verifyAndUpdateStatus(context: Context, packageName: String, scheduleId: Int, pendingResult: PendingResult) {
-        CoroutineScope(Dispatchers.IO).launch {
-            // Wait a few seconds for the app to launch
-            delay(3000)
+    private suspend fun verifyAndUpdateStatus(context: Context, packageName: String, scheduleId: Int) {
+        // Wait a few seconds for the app to launch.
+        delay(3000)
 
-            val appLaunchTracker = EntryPointAccessors.fromApplication(
-                context.applicationContext,
-                AppLaunchTrackerEntryPoint::class.java
-            ).appLaunchTracker()
+        val appLaunchTracker = EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            AppLaunchTrackerEntryPoint::class.java
+        ).appLaunchTracker()
 
-            val repository = EntryPointAccessors.fromApplication(
-                context.applicationContext,
-                ScheduleRepositoryEntryPoint::class.java
-            ).scheduleRepository()
-            
-            val launchTime = System.currentTimeMillis()
-            val isLaunched = appLaunchTracker.verifyAppLaunched(packageName, launchTime - 5000)
+        val repository = getRepository(context)
 
-            // Get schedule to retrieve app name
-            val schedule = repository.getScheduleById(scheduleId)
-            val appName = schedule?.appName ?: packageName
-            
-            if (isLaunched) {
-                Log.i(TAG, "App launch verified for: $packageName")
-                updateScheduleStatus(context, scheduleId, ScheduleStatus.LAUNCHED)
-                sendNotification(context, appName, true)
-            } else {
-                Log.e(TAG, "Could not verify app launch for: $packageName")
-                updateScheduleStatus(context, scheduleId, ScheduleStatus.FAILED)
-                sendNotification(context, appName, false)
-            }
+        val launchTime = System.currentTimeMillis()
+        val isLaunched = appLaunchTracker.verifyAppLaunched(packageName, launchTime - 5000)
 
-            pendingResult.finish()
+        // Get schedule to retrieve app name.
+        val schedule = repository.getScheduleById(scheduleId)
+        val appName = schedule?.appName ?: packageName
+
+        if (isLaunched) {
+            Log.i(TAG, "App launch verified for: $packageName")
+            updateScheduleStatus(repository, scheduleId, ScheduleStatus.LAUNCHED)
+            sendNotification(context, appName, true)
+        } else {
+            Log.e(TAG, "Could not verify app launch for: $packageName")
+            updateScheduleStatus(repository, scheduleId, ScheduleStatus.FAILED)
+            sendNotification(context, appName, false)
         }
     }
 
@@ -100,14 +106,12 @@ class AppLaunchReceiver : BroadcastReceiver() {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "app_launch_channel"
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                channelId,
-                "App Launch",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            notificationManager.createNotificationChannel(channel)
-        }
+        val channel = NotificationChannel(
+            channelId,
+            "App Launch",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        notificationManager.createNotificationChannel(channel)
 
         val title = if (success) "App Launched" else "App Launch Failed"
         val text = if (success) {
@@ -125,17 +129,22 @@ class AppLaunchReceiver : BroadcastReceiver() {
         notificationManager.notify(System.currentTimeMillis().toInt(), notification)
     }
 
-    private fun updateScheduleStatus(context: Context, scheduleId: Int, status: ScheduleStatus) {
-        val repository = EntryPointAccessors.fromApplication(
+    private fun getRepository(context: Context): ScheduleRepository {
+        return EntryPointAccessors.fromApplication(
             context.applicationContext,
             ScheduleRepositoryEntryPoint::class.java
         ).scheduleRepository()
+    }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val schedule = repository.getScheduleById(scheduleId)
-            if (schedule != null) {
-                repository.updateSchedule(schedule.copy(status = status))
-            }
+    private suspend fun updateScheduleStatus(repository: ScheduleRepository, scheduleId: Int, status: ScheduleStatus) {
+        if (scheduleId < 0) {
+            Log.w(TAG, "Skipping status update for invalid schedule id: $scheduleId")
+            return
+        }
+
+        val schedule = repository.getScheduleById(scheduleId)
+        if (schedule != null) {
+            repository.updateSchedule(schedule.copy(status = status))
         }
     }
 
