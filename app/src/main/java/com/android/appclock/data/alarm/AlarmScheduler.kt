@@ -17,14 +17,20 @@ class AlarmScheduler @Inject constructor(
 ) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
+    private fun createAlarmIntent(scheduleId: Int, packageName: String? = null): Intent {
+        return Intent(context, AppLaunchReceiver::class.java).apply {
+            action = ACTION_TRIGGER_ALARM
+            putExtra(EXTRA_SCHEDULE_ID, scheduleId)
+            if (!packageName.isNullOrBlank()) {
+                putExtra(EXTRA_PACKAGE_NAME, packageName)
+            }
+        }
+    }
+
     fun scheduleAppLaunch(scheduleId: Int, packageName: String, scheduledTime: Long) {
         Log.i(TAG, "Scheduling app launch - ID: $scheduleId, Package: $packageName")
 
-        val intent = Intent(context, AppLaunchReceiver::class.java).apply {
-            action = ACTION_TRIGGER_ALARM
-            putExtra(EXTRA_PACKAGE_NAME, packageName)
-            putExtra(EXTRA_SCHEDULE_ID, scheduleId)
-        }
+        val intent = createAlarmIntent(scheduleId, packageName)
 
         val pendingIntent = PendingIntent.getBroadcast(
             context,
@@ -53,7 +59,7 @@ class AlarmScheduler @Inject constructor(
 
     fun cancelScheduledLaunch(scheduleId: Int) {
         Log.i(TAG, "cancelScheduledLaunch for id[$scheduleId]")
-        val intent = Intent(context, AppLaunchReceiver::class.java)
+        val intent = createAlarmIntent(scheduleId)
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             scheduleId.hashCode(),

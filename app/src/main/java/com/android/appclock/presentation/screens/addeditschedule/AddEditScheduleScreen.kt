@@ -9,14 +9,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AccessAlarm
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -49,6 +56,17 @@ fun AddEditScheduleScreen(
 
     val expanded = viewModel.expanded.value
     val showTimePicker = viewModel.showTimePicker.value
+    var appSearchQuery by remember { mutableStateOf("") }
+
+    val filteredApps = remember(appSearchQuery, installedApps) {
+        if (appSearchQuery.isBlank()) {
+            installedApps
+        } else {
+            installedApps.filter { app ->
+                app.appName.contains(appSearchQuery, ignoreCase = true)
+            }
+        }
+    }
 
     val validityState = viewModel.validityState.value
     val isNewSchedule = schedule.id == SCHEDULE_ID_DEFAULT
@@ -89,27 +107,56 @@ fun AddEditScheduleScreen(
 
             DropdownMenu(
                 expanded = expanded,
-                onDismissRequest = { viewModel.toggleDropdown() },
+                onDismissRequest = {
+                    appSearchQuery = ""
+                    viewModel.toggleDropdown()
+                },
                 modifier = Modifier
                     .fillMaxWidth(0.91f)
                     .height(400.dp)
             ) {
-                installedApps.take(100).forEach { app ->
-                    DropdownMenuItem(
-                        text = { Text(app.appName) },
-                        leadingIcon = {
-                            AppIconImage(
-                                packageName = app.packageName,
-                                contentDescription = app.appName,
-                                appIconLoader = viewModel.appIconLoader,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        },
-                        onClick = {
-                            viewModel.onEvent(AddEditScheduleEvent.EnteredApp(app))
-                            viewModel.toggleDropdown()
-                        }
+                OutlinedTextField(
+                    value = appSearchQuery,
+                    onValueChange = { appSearchQuery = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    singleLine = true,
+                    label = { Text("Search apps") }
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                if (filteredApps.isEmpty()) {
+                    Text(
+                        text = "No apps found",
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .height(330.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        filteredApps.forEach { app ->
+                            DropdownMenuItem(
+                                text = { Text(app.appName) },
+                                leadingIcon = {
+                                    AppIconImage(
+                                        packageName = app.packageName,
+                                        contentDescription = app.appName,
+                                        appIconLoader = viewModel.appIconLoader,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                },
+                                onClick = {
+                                    viewModel.onEvent(AddEditScheduleEvent.EnteredApp(app))
+                                    appSearchQuery = ""
+                                    viewModel.toggleDropdown()
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }

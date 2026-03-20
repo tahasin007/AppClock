@@ -23,6 +23,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.android.appclock.core.common.ScheduleValidity
 import com.android.appclock.data.model.ScheduleStatus
+import com.android.appclock.presentation.common.uiColor
+import com.android.appclock.presentation.common.uiIcon
 
 @Composable
 fun CustomAppBarEditScreen(
@@ -73,16 +75,16 @@ fun CustomAppBarEditScreen(
                     modifier = Modifier.then(
                         if (scheduleStatus == ScheduleStatus.CANCELED) {
                             Modifier.background(
-                                color = ScheduleStatus.CANCELED.statusColor.copy(alpha = 0.2f),
+                                color = ScheduleStatus.CANCELED.uiColor.copy(alpha = 0.2f),
                                 shape = CircleShape
                             )
                         } else Modifier
                     ),
                     onClick = { onChangeScheduleStatus(ScheduleStatus.CANCELED) }) {
                     Icon(
-                        imageVector = ScheduleStatus.CANCELED.statusIcon,
+                        imageVector = ScheduleStatus.CANCELED.uiIcon,
                         contentDescription = "Cancel",
-                        tint = ScheduleStatus.CANCELED.statusColor,
+                        tint = ScheduleStatus.CANCELED.uiColor,
                         modifier = Modifier.alpha(if (scheduleStatus == ScheduleStatus.CANCELED) 1f else 0.25f)
                     )
                 }
@@ -91,16 +93,16 @@ fun CustomAppBarEditScreen(
                     modifier = Modifier.then(
                         if (scheduleStatus == ScheduleStatus.UPCOMING) {
                             Modifier.background(
-                                color = ScheduleStatus.UPCOMING.statusColor.copy(alpha = 0.2f),
+                                color = ScheduleStatus.UPCOMING.uiColor.copy(alpha = 0.2f),
                                 shape = CircleShape
                             )
                         } else Modifier
                     ),
                     onClick = { onChangeScheduleStatus(ScheduleStatus.UPCOMING) }) {
                     Icon(
-                        imageVector = ScheduleStatus.UPCOMING.statusIcon,
+                        imageVector = ScheduleStatus.UPCOMING.uiIcon,
                         contentDescription = "Schedule",
-                        tint = ScheduleStatus.UPCOMING.statusColor,
+                        tint = ScheduleStatus.UPCOMING.uiColor,
                         modifier = Modifier.alpha(if (scheduleStatus == ScheduleStatus.UPCOMING) 1f else 0.25f)
                     )
                 }

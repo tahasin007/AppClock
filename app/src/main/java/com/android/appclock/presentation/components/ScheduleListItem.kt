@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.appclock.data.model.ScheduleStatus
 import com.android.appclock.presentation.common.SchedulesDataUI
+import com.android.appclock.presentation.common.uiColor
+import com.android.appclock.presentation.common.uiIcon
 import com.android.appclock.utils.AppIconLoader
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -88,10 +90,10 @@ fun ScheduleListItem(
         colors = CardDefaults.cardColors(
             containerColor = when {
                 isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                schedule.status == ScheduleStatus.LAUNCHED -> ScheduleStatus.LAUNCHED.statusColor.copy(
+                schedule.status == ScheduleStatus.LAUNCHED -> ScheduleStatus.LAUNCHED.uiColor.copy(
                     alpha = 0.05f
                 )
-                schedule.status == ScheduleStatus.FAILED -> ScheduleStatus.FAILED.statusColor.copy(
+                schedule.status == ScheduleStatus.FAILED -> ScheduleStatus.FAILED.uiColor.copy(
                     alpha = 0.05f
                 )
                 else -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
@@ -143,16 +145,17 @@ fun ScheduleListItem(
                     Spacer(modifier = Modifier.width(10.dp))
 
                     Icon(
-                        imageVector = schedule.status.statusIcon,
+                        imageVector = schedule.status.uiIcon,
                         contentDescription = schedule.status.name,
                         modifier = Modifier.size(18.dp),
-                        tint = schedule.status.statusColor
+                        tint = schedule.status.uiColor
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = schedule.status.name,
                         style = MaterialTheme.typography.labelSmall.copy(
-                            color = schedule.status.statusColor, fontWeight = FontWeight.SemiBold
+                            color = schedule.status.uiColor,
+                            fontWeight = FontWeight.SemiBold
                         )
                     )
                 }
