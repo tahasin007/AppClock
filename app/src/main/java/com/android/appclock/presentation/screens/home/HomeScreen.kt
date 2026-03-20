@@ -1,151 +1,94 @@
 package com.android.appclock.presentation.screens.home
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.android.appclock.data.model.ScheduleStatus
-import com.android.appclock.presentation.common.SchedulesDataUI
-import com.android.appclock.presentation.components.EmptyStateCard
-import com.android.appclock.presentation.components.HeroMetricCard
-import com.android.appclock.presentation.components.LoadingCard
-import com.android.appclock.presentation.components.ScheduleListItem
 import com.android.appclock.presentation.navigation.Screen
-import com.android.appclock.ui.theme.ClockBlue
-import com.android.appclock.ui.theme.ClockBlueDark
-import com.android.appclock.ui.theme.ClockCyan
-import com.android.appclock.ui.theme.ClockMint
-import com.android.appclock.utils.Constants.NAV_ARG_SCHEDULE_ID
 
 @Composable
 fun HomeScreen(
     navController: NavController,
-    onOpenDrawer: () -> Unit,
-    viewModel: HomeViewModel = hiltViewModel()
+    onOpenDrawer: () -> Unit
 ) {
-    val schedules = viewModel.schedulesState
-    val isLoading = viewModel.isLoading.value
-    val upcomingCount = schedules.count { it.status == ScheduleStatus.UPCOMING }
-    val canceledCount = schedules.count { it.status == ScheduleStatus.CANCELED }
-    val nextSchedule = schedules.firstOrNull { it.status == ScheduleStatus.UPCOMING }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        HomeTopBar(onOpenDrawer = onOpenDrawer)
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                start = 20.dp,
-                end = 20.dp,
-                top = 12.dp,
-                bottom = 104.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(18.dp)
+        HomeNavCard(
+            title = "Usage monitoring",
+            subtitle = "Track foreground app usage and set daily limits for selected apps.",
+            icon = Icons.Default.Insights,
+            onClick = { navController.navigate(Screen.UsageMonitoring.route) }
+        )
+
+        HomeNavCard(
+            title = "App launch",
+            subtitle = "Manage launch schedules, history, and recurring automations.",
+            icon = Icons.Default.Schedule,
+            onClick = { navController.navigate(Screen.AppLaunch.route) }
+        )
+    }
+}
+
+@Composable
+private fun HomeNavCard(
+    title: String,
+    subtitle: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.clickable(onClick = onClick),
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            item {
-                HomeTopBar(
-                    onOpenDrawer = onOpenDrawer
-                )
-            }
-
-            item {
-                HomeHeroCard(
-                    nextSchedule = nextSchedule,
-                    upcomingCount = upcomingCount,
-                    canceledCount = canceledCount,
-                    onAddSchedule = { navController.navigate(Screen.AddEditSchedule.route) },
-                    onOpenHistory = { navController.navigate(Screen.History.route) }
-                )
-            }
-
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "Your launch queue",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Text(
-                        text = if (schedules.isEmpty()) {
-                            "Create your first scheduled launch to turn AppClock into a focused routine tool."
-                        } else {
-                            "Upcoming schedules stay on the home screen, while history remains one tap away."
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            when {
-                isLoading -> {
-                    item {
-                        LoadingCard(
-                            title = "Loading your schedules",
-                            subtitle = "Refreshing upcoming launches and recent edits."
-                        )
-                    }
-                }
-
-                schedules.isEmpty() -> {
-                    item {
-                        EmptyStateCard(
-                            title = "No schedules yet",
-                            subtitle = "Tap the button below to schedule your first app launch.",
-                            buttonText = "Create my first schedule",
-                            onButtonClick = { navController.navigate(Screen.AddEditSchedule.route) }
-                        )
-                    }
-                }
-
-                else -> {
-                    items(
-                        items = schedules,
-                        key = { schedule -> schedule.id }
-                    ) { schedule ->
-                        ScheduleListItem(
-                            schedule = schedule,
-                            appIconLoader = viewModel.appIconLoader,
-                            onClick = {
-                                navController.navigate(
-                                    Screen.AddEditSchedule.route + "?$NAV_ARG_SCHEDULE_ID=${schedule.id}"
-                                )
-                            }
-                        )
-                    }
-                }
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(18.dp)
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
-
     }
 }
 
@@ -184,119 +127,6 @@ private fun HomeTopBar(
     }
 }
 
-@Composable
-private fun HomeHeroCard(
-    nextSchedule: SchedulesDataUI?,
-    upcomingCount: Int,
-    canceledCount: Int,
-    onAddSchedule: () -> Unit,
-    onOpenHistory: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(32.dp))
-            .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(ClockBlueDark, ClockBlue, ClockCyan)
-                )
-            )
-            .padding(24.dp)
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = ClockMint.copy(alpha = 0.18f)
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Schedule,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Text(
-                        text = "Reliable app launch automation",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                }
-            }
-
-            Text(
-                text = "Plan the apps you need, see what is next, and keep history tucked away until you need it.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.92f)
-            )
-
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                HeroMetricCard(
-                    title = "Upcoming",
-                    value = upcomingCount.toString(),
-                    modifier = Modifier.weight(1f)
-                )
-                HeroMetricCard(
-                    title = "Canceled",
-                    value = canceledCount.toString(),
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.12f)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Text(
-                        text = "Next up",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
-                    )
-                    Text(
-                        text = nextSchedule?.appName ?: "No launch queued yet",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Text(
-                        text = nextSchedule?.let { "${it.scheduledDate} • ${it.scheduledTime}" }
-                            ?: "Add a schedule to see the next app launch here.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
-                    )
-                }
-            }
-
-
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(onClick = onAddSchedule) {
-                    Text(text = "New schedule")
-                }
-                TextButton(onClick = onOpenHistory) {
-                    Text(
-                        text = "View history",
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
-        }
-    }
-}
 
 
 

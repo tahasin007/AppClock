@@ -1,4 +1,4 @@
-package com.android.appclock.presentation.screens.home
+package com.android.appclock.presentation.screens.applaunch
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
+class AppLaunchViewModel @Inject constructor(
     private val useCases: ScheduleUseCases,
     private val alarmScheduler: AlarmScheduler,
     val appIconLoader: AppIconLoader

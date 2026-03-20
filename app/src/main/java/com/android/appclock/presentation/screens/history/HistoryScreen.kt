@@ -1,8 +1,6 @@
 package com.android.appclock.presentation.screens.history
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -32,8 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,6 +38,8 @@ import androidx.navigation.NavController
 import com.android.appclock.data.model.ScheduleStatus
 import com.android.appclock.presentation.components.EmptyDataView
 import com.android.appclock.presentation.components.FilterButton
+import com.android.appclock.presentation.components.GradientHeroCard
+import com.android.appclock.presentation.components.PackageInfoCard
 import com.android.appclock.presentation.components.ScheduleListItem
 import com.android.appclock.ui.theme.ClockBlue
 import com.android.appclock.ui.theme.ClockBlueDark
@@ -85,7 +84,9 @@ fun HistoryScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 HistoryHeroCard(
                     launchedCount = launchedCount,
-                    failedCount = failedCount
+                    failedCount = failedCount,
+                    latestSchedule = allSchedules.firstOrNull(),
+                    appIconLoader = viewModel.appIconLoader
                 )
             }
 
@@ -193,46 +194,57 @@ private fun HistoryTopBar(onBackClick: () -> Unit) {
 @Composable
 private fun HistoryHeroCard(
     launchedCount: Int,
-    failedCount: Int
+    failedCount: Int,
+    latestSchedule: com.android.appclock.presentation.common.SchedulesDataUI?,
+    appIconLoader: com.android.appclock.utils.AppIconLoader
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(androidx.compose.foundation.shape.RoundedCornerShape(30.dp))
-            .background(
-                Brush.linearGradient(colors = listOf(ClockBlueDark, ClockBlue, ClockCyan))
-            )
-            .padding(20.dp)
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.History,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.size(8.dp))
-                Text(
-                    text = "Execution overview",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
+    val heroTitleColor = Color.White
 
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                HistoryMetric(
-                    icon = Icons.Default.Verified,
-                    label = "Launched",
-                    value = launchedCount
-                )
-                HistoryMetric(
-                    icon = Icons.Default.Warning,
-                    label = "Failed",
-                    value = failedCount
-                )
-            }
+    GradientHeroCard(
+        cornerRadius = 30.dp,
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(20.dp),
+        verticalSpacing = 12.dp,
+        gradientColors = listOf(ClockBlueDark, ClockBlue, ClockCyan)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Default.History,
+                contentDescription = null,
+                tint = heroTitleColor,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            Text(
+                text = "Execution overview",
+                style = MaterialTheme.typography.titleMedium,
+                color = heroTitleColor
+            )
         }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            HistoryMetric(
+                icon = Icons.Default.Verified,
+                label = "Launched",
+                value = launchedCount
+            )
+            HistoryMetric(
+                icon = Icons.Default.Warning,
+                label = "Failed",
+                value = failedCount
+            )
+        }
+
+        PackageInfoCard(
+            title = latestSchedule?.let { "Latest: ${it.scheduledDate} • ${it.scheduledTime}" }
+                ?: "No history yet",
+            appName = latestSchedule?.appName
+                ?: "Completed launches will appear after execution.",
+            packageName = latestSchedule?.packageName.orEmpty(),
+            appIconLoader = appIconLoader,
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+            titleColor = MaterialTheme.colorScheme.onSurface,
+            bodyColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
@@ -245,27 +257,27 @@ private fun RowScope.HistoryMetric(
     Surface(
         modifier = Modifier.weight(1f),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.14f)
+        color = Color.Black.copy(alpha = 0.2f)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
+                    tint = Color.White,
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.size(6.dp))
                 Text(
                     text = label,
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = Color.White
                 )
             }
             Text(
                 text = value.toString(),
                 style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = Color.White,
                 fontWeight = FontWeight.Bold
             )
         }

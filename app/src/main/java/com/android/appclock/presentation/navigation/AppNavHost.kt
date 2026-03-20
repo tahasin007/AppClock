@@ -17,8 +17,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.android.appclock.presentation.screens.addeditschedule.AddEditScheduleScreen
+import com.android.appclock.presentation.screens.applaunch.AppLaunchScreen
 import com.android.appclock.presentation.screens.history.HistoryScreen
 import com.android.appclock.presentation.screens.home.HomeScreen
+import com.android.appclock.presentation.screens.usagemonitoring.AddEditUsageMonitoringScreen
+import com.android.appclock.presentation.screens.usagemonitoring.UsageMonitoringScreen
 import com.android.appclock.utils.Constants.NAV_ARG_SCHEDULE_ID
 import com.android.appclock.utils.Constants.SCHEDULE_ID_INVALID
 
@@ -37,6 +40,27 @@ fun AppNavHost(
                 navController = navController,
                 onOpenDrawer = onOpenDrawer
             )
+        }
+        composable(
+            route = Screen.UsageMonitoring.route,
+            enterTransition = { enterTransition() },
+            exitTransition = { exitTransition() },
+        ) {
+            UsageMonitoringScreen(navController = navController)
+        }
+        composable(
+            route = Screen.AddEditUsageMonitoring.route,
+            enterTransition = { enterTransition() },
+            exitTransition = { exitTransition() },
+        ) {
+            AddEditUsageMonitoringScreen(navController = navController)
+        }
+        composable(
+            route = Screen.AppLaunch.route,
+            enterTransition = { enterTransition() },
+            exitTransition = { exitTransition() },
+        ) {
+            AppLaunchScreen(navController = navController)
         }
         composable(
             route = Screen.History.route,
