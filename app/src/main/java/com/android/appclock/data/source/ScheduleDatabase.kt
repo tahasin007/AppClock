@@ -6,7 +6,7 @@ import com.android.appclock.domain.model.ScheduleAppEntity
 
 @Database(
     entities = [ScheduleAppEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class ScheduleDatabase : RoomDatabase() {

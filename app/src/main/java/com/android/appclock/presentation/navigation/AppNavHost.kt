@@ -4,7 +4,6 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -26,7 +25,7 @@ import com.android.appclock.utils.Constants.SCHEDULE_ID_INVALID
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    onHistorySelectionModeChange: ((Boolean) -> Unit)? = null
+    onOpenDrawer: () -> Unit
 ) {
     NavHost(navController = navController, startDestination = Screen.Home.route) {
         composable(
@@ -34,17 +33,17 @@ fun AppNavHost(
             enterTransition = { enterTransition() },
             exitTransition = { exitTransition() },
         ) {
-            HomeScreen(navController = navController)
+            HomeScreen(
+                navController = navController,
+                onOpenDrawer = onOpenDrawer
+            )
         }
         composable(
             route = Screen.History.route,
             enterTransition = { enterTransition() },
             exitTransition = { exitTransition() },
         ) {
-            HistoryScreen(
-                navController = navController,
-                onSelectionModeChange = onHistorySelectionModeChange
-            )
+            HistoryScreen(navController = navController)
         }
         composable(
             route = Screen.AddEditSchedule.route + "?$NAV_ARG_SCHEDULE_ID={$NAV_ARG_SCHEDULE_ID}",

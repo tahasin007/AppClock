@@ -40,7 +40,7 @@ object AppModule {
             ScheduleDatabase::class.java,
             "schedule_database"
         )
-            .addMigrations(DatabaseMigrations.MIGRATION_1_2)
+            .addMigrations(DatabaseMigrations.MIGRATION_1_2, DatabaseMigrations.MIGRATION_2_3)
             .build()
     }
 

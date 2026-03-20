@@ -34,12 +34,12 @@ fun TimePickerDialog(
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             modifier = Modifier.padding(16.dp)
         ) {
             Column(
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 val timeState = rememberTimePickerState(
@@ -57,7 +57,7 @@ fun TimePickerDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismissRequest) {
-                        Text("Cancel", color = MaterialTheme.colorScheme.onPrimary)
+                        Text("Cancel", color = MaterialTheme.colorScheme.primary)
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))

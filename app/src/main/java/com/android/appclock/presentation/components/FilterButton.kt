@@ -1,7 +1,6 @@
 package com.android.appclock.presentation.components
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
@@ -18,17 +17,23 @@ import androidx.compose.ui.unit.sp
 fun FilterButton(text: String, isSelected: Boolean, onClick: () -> Unit) {
     TextButton(
         onClick = onClick,
-        shape = RoundedCornerShape(50),
+        shape = RoundedCornerShape(999.dp),
         modifier = Modifier
-            .height(30.dp)
-            .padding(horizontal = 4.dp),
+            .padding(end = 8.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else
-                MaterialTheme.colorScheme.primary.copy(alpha = .05f),
-            contentColor = if (isSelected) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primary
+            containerColor = if (isSelected) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+            },
+            contentColor = if (isSelected) {
+                MaterialTheme.colorScheme.onPrimaryContainer
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
         ),
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
     ) {
-        Text(text, fontSize = 10.sp, fontWeight = FontWeight.Medium)
+        Text(text, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
     }
 }

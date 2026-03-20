@@ -2,6 +2,7 @@ package com.android.appclock.domain.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.android.appclock.data.model.RecurringType
 import com.android.appclock.data.model.ScheduleStatus
 
 @Entity(tableName = "schedules")
@@ -11,5 +12,6 @@ data class ScheduleAppEntity(
     val packageName: String,
     val scheduledDateTime: Long,
     val description: String?,
-    val status: ScheduleStatus
+    val status: ScheduleStatus,
+    val recurringType: RecurringType = RecurringType.NONE
 )

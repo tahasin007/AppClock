@@ -1,19 +1,24 @@
 package com.android.appclock.presentation.components
 
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -38,88 +43,121 @@ fun CustomAppBarEditScreen(
 ) {
     val context = LocalContext.current
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                    shape = RoundedCornerShape(18.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.75f)
+                ) {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+
+                Column(modifier = Modifier.padding(start = 10.dp)) {
+                    Text(
+                        text = if (isNewSchedule) "Create schedule" else "Edit schedule",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        text = if (isNewSchedule) {
+                            "Choose an app and time to build a new launch routine."
+                        } else {
+                            "Update timing, app, or status before saving your changes."
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
-            Text(
-                text = "Schedule Launch", style = MaterialTheme.typography.titleSmall.copy(
-                    color = MaterialTheme.colorScheme.primary
-                )
-            )
         }
 
-        Row {
-            if (!isNewSchedule) {
-                IconButton(onClick = onDeleteClick) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+        FilledTonalButton(
+            onClick = {
+                if (validityState != ScheduleValidity.VALID) {
+                    Toast.makeText(context, validityState.message, Toast.LENGTH_SHORT).show()
+                } else {
+                    onSaveClick()
                 }
-            }
-            if (!isNewSchedule) {
-                IconButton(
-                    modifier = Modifier.then(
-                        if (scheduleStatus == ScheduleStatus.CANCELED) {
-                            Modifier.background(
-                                color = ScheduleStatus.CANCELED.uiColor.copy(alpha = 0.2f),
-                                shape = CircleShape
-                            )
-                        } else Modifier
-                    ),
-                    onClick = { onChangeScheduleStatus(ScheduleStatus.CANCELED) }) {
-                    Icon(
-                        imageVector = ScheduleStatus.CANCELED.uiIcon,
-                        contentDescription = "Cancel",
-                        tint = ScheduleStatus.CANCELED.uiColor,
-                        modifier = Modifier.alpha(if (scheduleStatus == ScheduleStatus.CANCELED) 1f else 0.25f)
-                    )
-                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .alpha(if (validityState == ScheduleValidity.VALID) 1f else 0.65f)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "Save",
+                modifier = Modifier.size(18.dp)
+            )
+            Text(text = "Save", modifier = Modifier.padding(start = 6.dp))
+        }
 
-                IconButton(
-                    modifier = Modifier.then(
-                        if (scheduleStatus == ScheduleStatus.UPCOMING) {
-                            Modifier.background(
-                                color = ScheduleStatus.UPCOMING.uiColor.copy(alpha = 0.2f),
-                                shape = CircleShape
-                            )
-                        } else Modifier
-                    ),
-                    onClick = { onChangeScheduleStatus(ScheduleStatus.UPCOMING) }) {
-                    Icon(
-                        imageVector = ScheduleStatus.UPCOMING.uiIcon,
-                        contentDescription = "Schedule",
-                        tint = ScheduleStatus.UPCOMING.uiColor,
-                        modifier = Modifier.alpha(if (scheduleStatus == ScheduleStatus.UPCOMING) 1f else 0.25f)
-                    )
-                }
-            }
-            IconButton(
-                onClick = {
-                    if (validityState != ScheduleValidity.VALID) {
-                        Toast.makeText(context, validityState.message, Toast.LENGTH_SHORT).show()
-                    } else onSaveClick()
-                },
-                modifier = Modifier.alpha(if (validityState == ScheduleValidity.VALID) 1f else 0.25f)
+        if (!isNewSchedule) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    Icons.Default.Check,
-                    contentDescription = "Save",
-                    tint = MaterialTheme.colorScheme.primary
+                AssistChip(
+                    onClick = { onChangeScheduleStatus(ScheduleStatus.UPCOMING) },
+                    label = { Text("Upcoming") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = ScheduleStatus.UPCOMING.uiIcon,
+                            contentDescription = null,
+                            tint = ScheduleStatus.UPCOMING.uiColor,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = if (scheduleStatus == ScheduleStatus.UPCOMING) {
+                            ScheduleStatus.UPCOMING.uiColor.copy(alpha = 0.14f)
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                        }
+                    )
                 )
+
+                AssistChip(
+                    onClick = { onChangeScheduleStatus(ScheduleStatus.CANCELED) },
+                    label = { Text("Canceled") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = ScheduleStatus.CANCELED.uiIcon,
+                            contentDescription = null,
+                            tint = ScheduleStatus.CANCELED.uiColor,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = if (scheduleStatus == ScheduleStatus.CANCELED) {
+                            ScheduleStatus.CANCELED.uiColor.copy(alpha = 0.14f)
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                        }
+                    )
+                )
+
+                FilledTonalButton(onClick = onDeleteClick) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(text = "Delete", modifier = Modifier.padding(start = 6.dp))
+                }
             }
         }
     }

@@ -15,7 +15,8 @@ object ScheduleMapper {
             scheduledTime = getFormattedTime2(entity.scheduledDateTime),
             scheduledDate = getFormattedDate2(entity.scheduledDateTime),
             description = entity.description,
-            status = entity.status
+            status = entity.status,
+            recurringType = entity.recurringType
         )
     }
     

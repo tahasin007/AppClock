@@ -1,12 +1,11 @@
 package com.android.appclock.presentation.components
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.background
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +21,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -63,8 +63,6 @@ fun ScheduleListItem(
         month to day
     }
 
-    val interactionSource = remember { MutableInteractionSource() }
-    
     // Animate border width
     val borderWidth by animateDpAsState(
         targetValue = if (isSelected) 2.dp else 0.dp,
@@ -72,41 +70,41 @@ fun ScheduleListItem(
         label = "borderWidth"
     )
 
+    val cardElevation by animateDpAsState(
+        targetValue = if (isSelected) 5.dp else 2.dp,
+        animationSpec = tween(durationMillis = 200),
+        label = "cardElevation"
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 12.dp)
-            .clickable(
-                interactionSource = interactionSource, indication = null, onClick = onClick
-            )
+            .padding(horizontal = 2.dp, vertical = 4.dp)
+            .clickable(onClick = onClick)
             .then(
                 Modifier.border(
                     width = borderWidth,
                     color = MaterialTheme.colorScheme.primary,
-                    shape = RoundedCornerShape(25.dp)
+                    shape = RoundedCornerShape(28.dp)
                 )
             ),
-        shape = RoundedCornerShape(25.dp),
+        shape = RoundedCornerShape(28.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = cardElevation),
         colors = CardDefaults.cardColors(
             containerColor = when {
-                isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                schedule.status == ScheduleStatus.LAUNCHED -> ScheduleStatus.LAUNCHED.uiColor.copy(
-                    alpha = 0.05f
-                )
-                schedule.status == ScheduleStatus.FAILED -> ScheduleStatus.FAILED.uiColor.copy(
-                    alpha = 0.05f
-                )
-                else -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
+                isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+                schedule.status == ScheduleStatus.LAUNCHED -> ScheduleStatus.LAUNCHED.uiColor.copy(alpha = 0.08f)
+                schedule.status == ScheduleStatus.FAILED -> ScheduleStatus.FAILED.uiColor.copy(alpha = 0.08f)
+                else -> MaterialTheme.colorScheme.surface
             }
         )
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(18.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Checkbox/Selection Indicator
             if (showCheckbox) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
@@ -118,88 +116,120 @@ fun ScheduleListItem(
                 )
             }
 
-            // Left column (app icon)
-            AppIconImage(
-                packageName = schedule.packageName,
-                contentDescription = schedule.appName,
-                appIconLoader = appIconLoader,
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                    .padding(8.dp),
-                iconSize = 48.dp
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            // Middle column (app name, description, time)
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = schedule.appName, style = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.primary
-                        ), fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 5.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(10.dp))
-
-                    Icon(
-                        imageVector = schedule.status.uiIcon,
-                        contentDescription = schedule.status.name,
-                        modifier = Modifier.size(18.dp),
-                        tint = schedule.status.uiColor
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = schedule.status.name,
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            color = schedule.status.uiColor,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-                }
-
-                if (!schedule.description.isNullOrEmpty()) {
-                    Text(
-                        text = schedule.description,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            letterSpacing = 0.5.sp,
-                            fontWeight = FontWeight.Light,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(bottom = 6.dp)
-                    )
-                }
-
-                Text(
-                    text = schedule.scheduledTime, style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+            Surface(
+                shape = RoundedCornerShape(18.dp),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)
+            ) {
+                AppIconImage(
+                    packageName = schedule.packageName,
+                    contentDescription = schedule.appName,
+                    appIconLoader = appIconLoader,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .padding(10.dp),
+                    iconSize = 48.dp
                 )
             }
 
-            // Right colum (date, month column)
+            Spacer(modifier = Modifier.width(14.dp))
+
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = schedule.appName,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    StatusPill(status = schedule.status)
+                }
+
+                Text(
+                    text = schedule.description?.takeIf { it.isNotBlank() } ?: schedule.packageName,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        letterSpacing = 0.5.sp,
+                        fontWeight = FontWeight.Light,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                Text(
+                    text = schedule.scheduledTime,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Surface(
+                shape = RoundedCornerShape(22.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
                 modifier = Modifier.padding(start = 12.dp)
             ) {
-                Text(
-                    text = month,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = day,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)
+                ) {
+                    Text(
+                        text = month,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = day,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
     }
+}
+
+@Composable
+private fun StatusPill(status: ScheduleStatus) {
+    Surface(
+        shape = RoundedCornerShape(999.dp),
+        color = status.uiColor.copy(alpha = 0.12f)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = status.uiIcon,
+                contentDescription = status.name,
+                modifier = Modifier.size(14.dp),
+                tint = status.uiColor
+            )
+            Text(
+                text = status.displayName(),
+                style = MaterialTheme.typography.labelMedium,
+                color = status.uiColor,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+private fun ScheduleStatus.displayName(): String {
+    val lowercase = name.lowercase(Locale.getDefault())
+    return lowercase.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 }
 

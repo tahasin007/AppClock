@@ -74,6 +74,7 @@ class AddEditScheduleViewModel @Inject constructor(
             is AddEditScheduleEvent.EnteredDate -> enterDate(event.date)
             is AddEditScheduleEvent.EnteredDescription -> enterDescription(event.description)
             is AddEditScheduleEvent.EnteredTime -> enterTime(event.hour, event.minute)
+            is AddEditScheduleEvent.EnteredRecurringType -> enterRecurringType(event.recurringType)
             is AddEditScheduleEvent.SaveSchedule -> saveSchedule()
             is AddEditScheduleEvent.ChangeScheduleStatus -> changeScheduleStatus(event.status)
         }
@@ -117,6 +118,7 @@ class AddEditScheduleViewModel @Inject constructor(
                         scheduledDate = getFormattedDate(it.scheduledDateTime),
                         description = it.description,
                         status = it.status,
+                        recurringType = it.recurringType,
                         id = it.id
                     )
                     _originalEditSchedulesState.value = _editScheduleState.value
@@ -163,6 +165,13 @@ class AddEditScheduleViewModel @Inject constructor(
         }
     }
 
+    private fun enterRecurringType(recurringType: com.android.appclock.data.model.RecurringType) {
+        if (_editScheduleState.value.recurringType != recurringType) {
+            _editScheduleState.value = _editScheduleState.value.copy(recurringType = recurringType)
+            validateEditSchedule()
+        }
+    }
+
     private fun saveSchedule() {
         val date = DateTimeUtil.validateDate(_editScheduleState.value.scheduledDate)
         val time = DateTimeUtil.validateTime(_editScheduleState.value.scheduledTime)
@@ -174,7 +183,8 @@ class AddEditScheduleViewModel @Inject constructor(
             packageName = _editScheduleState.value.packageName,
             scheduledDateTime = scheduledEpochMillis,
             description = _editScheduleState.value.description?.trim(),
-            status = _editScheduleState.value.status
+            status = _editScheduleState.value.status,
+            recurringType = _editScheduleState.value.recurringType
         )
 
         viewModelScope.launch {

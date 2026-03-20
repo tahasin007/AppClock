@@ -7,25 +7,47 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 private val DarkColorScheme = darkColorScheme(
-    primary = SkyBluePrimary,
-    onPrimary = SkyBlueOnPrimary,
-    secondary = SkyBlueSecondary,
-    onSecondary = SkyBlueOnSecondary,
+    primary = DarkPrimary,
+    onPrimary = DarkOnPrimary,
+    primaryContainer = DarkPrimaryContainer,
+    onPrimaryContainer = DarkOnPrimaryContainer,
+    secondary = DarkSecondary,
+    onSecondary = DarkOnSecondary,
+    secondaryContainer = DarkSecondaryContainer,
+    onSecondaryContainer = DarkOnSecondaryContainer,
+    tertiary = DarkTertiary,
+    onTertiary = DarkOnTertiary,
+    tertiaryContainer = DarkTertiaryContainer,
+    onTertiaryContainer = DarkOnTertiaryContainer,
     background = DarkBackground,
     surface = DarkSurface,
+    surfaceVariant = DarkSurfaceVariant,
+    onSurfaceVariant = DarkOnSurfaceVariant,
     onBackground = DarkOnBackground,
-    onSurface = DarkOnSurface
+    onSurface = DarkOnSurface,
+    outline = DarkOutline
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = SkyBluePrimary,
-    onPrimary = SkyBlueOnPrimary,
-    secondary = SkyBlueSecondary,
-    onSecondary = SkyBlueOnSecondary,
+    primary = LightPrimary,
+    onPrimary = LightOnPrimary,
+    primaryContainer = LightPrimaryContainer,
+    onPrimaryContainer = LightOnPrimaryContainer,
+    secondary = LightSecondary,
+    onSecondary = LightOnSecondary,
+    secondaryContainer = LightSecondaryContainer,
+    onSecondaryContainer = LightOnSecondaryContainer,
+    tertiary = LightTertiary,
+    onTertiary = LightOnTertiary,
+    tertiaryContainer = LightTertiaryContainer,
+    onTertiaryContainer = LightOnTertiaryContainer,
     background = LightBackground,
     surface = LightSurface,
+    surfaceVariant = LightSurfaceVariant,
+    onSurfaceVariant = LightOnSurfaceVariant,
     onBackground = LightOnBackground,
-    onSurface = LightOnSurface
+    onSurface = LightOnSurface,
+    outline = LightOutline
 )
 
 @Composable

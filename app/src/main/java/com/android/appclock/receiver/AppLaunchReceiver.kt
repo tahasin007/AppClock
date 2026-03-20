@@ -8,7 +8,9 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.android.appclock.R
+import com.android.appclock.data.model.RecurringType
 import com.android.appclock.data.model.ScheduleStatus
+import com.android.appclock.di.AlarmSchedulerEntryPoint
 import com.android.appclock.di.AppLaunchTrackerEntryPoint
 import com.android.appclock.di.ScheduleRepositoryEntryPoint
 import com.android.appclock.domain.repository.ScheduleRepository
@@ -20,6 +22,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 class AppLaunchReceiver : BroadcastReceiver() {
 
@@ -40,6 +45,7 @@ class AppLaunchReceiver : BroadcastReceiver() {
                 try {
                     val repository = getRepository(context)
                     updateScheduleStatus(repository, scheduledId, ScheduleStatus.FAILED)
+                    rescheduleIfRecurring(context, scheduledId)
                 } finally {
                     pendingResult.finish()
                 }
@@ -66,6 +72,7 @@ class AppLaunchReceiver : BroadcastReceiver() {
                 try {
                     val repository = getRepository(context)
                     updateScheduleStatus(repository, scheduledId, ScheduleStatus.FAILED)
+                    rescheduleIfRecurring(context, scheduledId)
                 } finally {
                     pendingResult.finish()
                 }
@@ -100,6 +107,38 @@ class AppLaunchReceiver : BroadcastReceiver() {
             updateScheduleStatus(repository, scheduleId, ScheduleStatus.FAILED)
             sendNotification(context, appName, false)
         }
+
+        rescheduleIfRecurring(context, scheduleId)
+    }
+
+    private suspend fun rescheduleIfRecurring(context: Context, scheduleId: Int) {
+        if (scheduleId < 0) return
+        val repository = getRepository(context)
+        val schedule = repository.getScheduleById(scheduleId) ?: return
+        if (schedule.recurringType == RecurringType.NONE) return
+
+        val nextTime = when (schedule.recurringType) {
+            RecurringType.DAILY -> schedule.scheduledDateTime + 24 * 60 * 60 * 1000L
+            RecurringType.WEEKLY -> schedule.scheduledDateTime + 7 * 24 * 60 * 60 * 1000L
+            RecurringType.MONTHLY -> ZonedDateTime
+                .ofInstant(Instant.ofEpochMilli(schedule.scheduledDateTime), ZoneId.systemDefault())
+                .plusMonths(1)
+                .toInstant()
+                .toEpochMilli()
+            RecurringType.NONE -> return
+        }
+
+        repository.updateSchedule(
+            schedule.copy(scheduledDateTime = nextTime, status = ScheduleStatus.UPCOMING)
+        )
+
+        val alarmScheduler = EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            AlarmSchedulerEntryPoint::class.java
+        ).alarmScheduler()
+
+        alarmScheduler.scheduleAppLaunch(scheduleId, schedule.packageName, nextTime)
+        Log.i(TAG, "Recurring schedule rescheduled: id=$scheduleId, nextTime=$nextTime")
     }
 
     private fun sendNotification(context: Context, appName: String, success: Boolean) {
