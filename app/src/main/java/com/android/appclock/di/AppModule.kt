@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.room.Room
 import com.android.appclock.data.alarm.AlarmScheduler
 import com.android.appclock.data.repository.ScheduleRepositoryImpl
+import com.android.appclock.data.source.DatabaseMigrations
 import com.android.appclock.data.source.ScheduleDao
 import com.android.appclock.data.source.ScheduleDatabase
 import com.android.appclock.domain.repository.ScheduleRepository
@@ -16,6 +17,7 @@ import com.android.appclock.domain.usecase.GetScheduleByIdUseCase
 import com.android.appclock.domain.usecase.GetSchedulesUseCase
 import com.android.appclock.domain.usecase.ScheduleUseCases
 import com.android.appclock.tracking.AppLaunchTracker
+import com.android.appclock.utils.AppIconLoader
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -37,7 +39,9 @@ object AppModule {
             context.applicationContext,
             ScheduleDatabase::class.java,
             "schedule_database"
-        ).build()
+        )
+            .addMigrations(DatabaseMigrations.MIGRATION_1_2)
+            .build()
     }
 
     @Provides
@@ -69,6 +73,12 @@ object AppModule {
     @Singleton
     fun provideAlarmScheduler(context: Context): AlarmScheduler {
         return AlarmScheduler(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAppIconLoader(context: Context): AppIconLoader {
+        return AppIconLoader(context)
     }
 
     @Provides

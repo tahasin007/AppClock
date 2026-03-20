@@ -1,7 +1,6 @@
 package com.android.appclock.presentation.components
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -34,9 +33,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberAsyncImagePainter
 import com.android.appclock.data.model.ScheduleStatus
 import com.android.appclock.presentation.common.SchedulesDataUI
+import com.android.appclock.utils.AppIconLoader
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,6 +44,7 @@ import java.util.Locale
 @SuppressLint("SimpleDateFormat")
 fun ScheduleListItem(
     schedule: SchedulesDataUI,
+    appIconLoader: AppIconLoader,
     onClick: () -> Unit,
     isSelected: Boolean = false,
     showCheckbox: Boolean = false
@@ -53,7 +53,7 @@ fun ScheduleListItem(
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val date = try {
             dateFormat.parse(schedule.scheduledDate) ?: Date()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Date()
         }
         val month = SimpleDateFormat("MMM", Locale.getDefault()).format(date).uppercase()
@@ -117,24 +117,16 @@ fun ScheduleListItem(
             }
 
             // Left column (app icon)
-            schedule.appIcon?.let { iconBitmap ->
-                Image(
-                    painter = rememberAsyncImagePainter(iconBitmap),
-                    contentDescription = schedule.appName,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                        .padding(8.dp)
-                )
-            } ?: Image(
-                painter = rememberAsyncImagePainter(model = null),
+            AppIconImage(
+                packageName = schedule.packageName,
                 contentDescription = schedule.appName,
+                appIconLoader = appIconLoader,
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                    .padding(8.dp)
+                    .padding(8.dp),
+                iconSize = 48.dp
             )
 
             Spacer(modifier = Modifier.width(12.dp))

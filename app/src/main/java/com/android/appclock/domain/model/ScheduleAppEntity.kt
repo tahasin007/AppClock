@@ -1,6 +1,5 @@
 package com.android.appclock.domain.model
 
-import android.graphics.Bitmap
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.android.appclock.data.model.ScheduleStatus
@@ -12,6 +11,5 @@ data class ScheduleAppEntity(
     val packageName: String,
     val scheduledDateTime: Long,
     val description: String?,
-    val status: ScheduleStatus,
-    val appIcon: Bitmap?
+    val status: ScheduleStatus
 )

@@ -1,7 +1,5 @@
 package com.android.appclock.presentation.components
 
-import android.graphics.Bitmap
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -25,14 +23,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
+import com.android.appclock.utils.AppIconLoader
 
 @Composable
 fun SelectableCard(
     title: String,
     value: String,
     modifier: Modifier = Modifier,
-    icon: Bitmap? = null,
+    packageName: String? = null,
+    appIconLoader: AppIconLoader? = null,
     leadingIcon: androidx.compose.ui.graphics.vector.ImageVector? = null,
     trailingIcon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Default.ArrowDropDown,
     onClick: () -> Unit
@@ -57,10 +56,11 @@ fun SelectableCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                icon?.let {
-                    Image(
-                        painter = rememberAsyncImagePainter(it),
+                if (!packageName.isNullOrBlank() && appIconLoader != null) {
+                    AppIconImage(
+                        packageName = packageName,
                         contentDescription = title,
+                        appIconLoader = appIconLoader,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -78,13 +78,11 @@ fun SelectableCard(
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
                 )
             }
-            if (trailingIcon != null) {
-                Icon(
-                    trailingIcon,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
+            Icon(
+                trailingIcon,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp)
+            )
         }
     }
 }

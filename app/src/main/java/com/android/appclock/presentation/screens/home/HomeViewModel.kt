@@ -11,6 +11,7 @@ import com.android.appclock.data.mapper.ScheduleMapper
 import com.android.appclock.data.model.ScheduleStatus
 import com.android.appclock.domain.usecase.ScheduleUseCases
 import com.android.appclock.presentation.common.SchedulesDataUI
+import com.android.appclock.utils.AppIconLoader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
@@ -22,7 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val useCases: ScheduleUseCases,
-    private val alarmScheduler: AlarmScheduler
+    private val alarmScheduler: AlarmScheduler,
+    val appIconLoader: AppIconLoader
 ) : ViewModel() {
 
     private val _schedulesState = mutableStateListOf<SchedulesDataUI>()

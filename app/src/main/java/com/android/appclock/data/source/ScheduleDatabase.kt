@@ -2,15 +2,13 @@ package com.android.appclock.data.source
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 import com.android.appclock.domain.model.ScheduleAppEntity
 
 @Database(
     entities = [ScheduleAppEntity::class],
-    version = 1,
-    exportSchema = false
+    version = 2,
+    exportSchema = true
 )
-@TypeConverters(BitmapConverter::class)
 abstract class ScheduleDatabase : RoomDatabase() {
     abstract fun scheduleDao(): ScheduleDao
 

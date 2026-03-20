@@ -2,7 +2,6 @@ package com.android.appclock.domain.usecase
 
 import android.content.Context
 import android.content.Intent
-import androidx.core.graphics.drawable.toBitmap
 import com.android.appclock.presentation.common.InstalledAppUI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -16,12 +15,16 @@ class GetInstalledAppsUseCase @Inject constructor(
         val intent = Intent(Intent.ACTION_MAIN, null).apply {
             addCategory(Intent.CATEGORY_LAUNCHER)
         }
-        pm.queryIntentActivities(intent, 0).map {
-            InstalledAppUI(
-                appName = it.loadLabel(pm).toString(),
-                packageName = it.activityInfo.packageName,
-                icon = it.activityInfo.loadIcon(pm).toBitmap()
-            )
-        }.sortedBy { it.appName }
+        pm.queryIntentActivities(intent, 0)
+            .asSequence()
+            .map {
+                InstalledAppUI(
+                    appName = it.loadLabel(pm).toString(),
+                    packageName = it.activityInfo.packageName
+                )
+            }
+            .distinctBy { it.packageName }
+            .sortedBy { it.appName.lowercase() }
+            .toList()
     }
 }

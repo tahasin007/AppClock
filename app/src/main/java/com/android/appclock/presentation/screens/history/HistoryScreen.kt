@@ -111,6 +111,7 @@ fun HistoryScreen(
                         
                         ScheduleListItem(
                             schedule = schedule,
+                            appIconLoader = viewModel.appIconLoader,
                             onClick = {
                                 viewModel.onEvent(HistoryScreenEvent.ToggleSelection(schedule.id))
                             },

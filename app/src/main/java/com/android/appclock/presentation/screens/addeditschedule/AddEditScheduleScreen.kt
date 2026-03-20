@@ -1,7 +1,6 @@
 package com.android.appclock.presentation.screens.addeditschedule
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -18,12 +17,11 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
+import com.android.appclock.presentation.components.AppIconImage
 import com.android.appclock.presentation.components.AppBasicTextField
 import com.android.appclock.presentation.components.CustomAppBarEditScreen
 import com.android.appclock.presentation.components.DockedDatePicker
@@ -84,7 +82,8 @@ fun AddEditScheduleScreen(
             SelectableCard(
                 title = "Select App",
                 value = schedule.appName.ifEmpty { "Select App" },
-                icon = schedule.appIcon,
+                packageName = schedule.packageName,
+                appIconLoader = viewModel.appIconLoader,
                 onClick = { viewModel.toggleDropdown() }
             )
 
@@ -95,18 +94,16 @@ fun AddEditScheduleScreen(
                     .fillMaxWidth(0.91f)
                     .height(400.dp)
             ) {
-                val displayedApps = remember(installedApps) { installedApps.take(100) }
-                displayedApps.forEach { app ->
+                installedApps.take(100).forEach { app ->
                     DropdownMenuItem(
                         text = { Text(app.appName) },
                         leadingIcon = {
-                            app.icon?.let { iconBitmap ->
-                                Image(
-                                    painter = rememberAsyncImagePainter(iconBitmap),
-                                    contentDescription = app.appName,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
+                            AppIconImage(
+                                packageName = app.packageName,
+                                contentDescription = app.appName,
+                                appIconLoader = viewModel.appIconLoader,
+                                modifier = Modifier.size(24.dp)
+                            )
                         },
                         onClick = {
                             viewModel.onEvent(AddEditScheduleEvent.EnteredApp(app))

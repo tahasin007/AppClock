@@ -17,6 +17,7 @@ import com.android.appclock.domain.usecase.GetInstalledAppsUseCase
 import com.android.appclock.domain.usecase.ScheduleUseCases
 import com.android.appclock.presentation.common.InstalledAppUI
 import com.android.appclock.presentation.common.SchedulesDataUI
+import com.android.appclock.utils.AppIconLoader
 import com.android.appclock.utils.Constants.SCHEDULE_ID_DEFAULT
 import com.android.appclock.utils.Constants.NAV_ARG_SCHEDULE_ID
 import com.android.appclock.utils.Constants.SCHEDULE_ID_INVALID
@@ -35,6 +36,7 @@ class AddEditScheduleViewModel @Inject constructor(
     private val scheduleUseCases: ScheduleUseCases,
     private val installedAppUseCase: GetInstalledAppsUseCase,
     private val alarmScheduler: AlarmScheduler,
+    val appIconLoader: AppIconLoader,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val _editScheduleState = mutableStateOf(SchedulesDataUI())
@@ -115,7 +117,6 @@ class AddEditScheduleViewModel @Inject constructor(
                         scheduledDate = getFormattedDate(it.scheduledDateTime),
                         description = it.description,
                         status = it.status,
-                        appIcon = it.appIcon,
                         id = it.id
                     )
                     _originalEditSchedulesState.value = _editScheduleState.value
@@ -149,8 +150,7 @@ class AddEditScheduleViewModel @Inject constructor(
         if (_editScheduleState.value.appName != app.appName) {
             _editScheduleState.value = _editScheduleState.value.copy(
                 appName = app.appName,
-                packageName = app.packageName,
-                appIcon = app.icon
+                packageName = app.packageName
             )
             validateEditSchedule()
         }
@@ -174,8 +174,7 @@ class AddEditScheduleViewModel @Inject constructor(
             packageName = _editScheduleState.value.packageName,
             scheduledDateTime = scheduledEpochMillis,
             description = _editScheduleState.value.description?.trim(),
-            status = _editScheduleState.value.status,
-            appIcon = _editScheduleState.value.appIcon
+            status = _editScheduleState.value.status
         )
 
         viewModelScope.launch {

@@ -56,6 +56,7 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
                         ) { schedule ->
                             ScheduleListItem(
                                 schedule = schedule,
+                                appIconLoader = viewModel.appIconLoader,
                                 onClick = {
                                     navController.navigate(
                                         Screen.AddEditSchedule.route + "?$NAV_ARG_SCHEDULE_ID=${schedule.id}"

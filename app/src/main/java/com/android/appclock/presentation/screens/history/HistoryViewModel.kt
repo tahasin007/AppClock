@@ -11,6 +11,7 @@ import com.android.appclock.data.mapper.ScheduleMapper
 import com.android.appclock.data.model.ScheduleStatus
 import com.android.appclock.domain.usecase.ScheduleUseCases
 import com.android.appclock.presentation.common.SchedulesDataUI
+import com.android.appclock.utils.AppIconLoader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
@@ -21,6 +22,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
     private val useCases: ScheduleUseCases,
+    val appIconLoader: AppIconLoader,
 ) : ViewModel() {
 
     private val _allSchedules = mutableStateListOf<SchedulesDataUI>()

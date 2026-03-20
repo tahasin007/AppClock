@@ -15,8 +15,7 @@ object ScheduleMapper {
             scheduledTime = getFormattedTime2(entity.scheduledDateTime),
             scheduledDate = getFormattedDate2(entity.scheduledDateTime),
             description = entity.description,
-            status = entity.status,
-            appIcon = entity.appIcon
+            status = entity.status
         )
     }
     
