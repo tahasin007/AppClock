@@ -31,20 +31,29 @@ class PermissionViewModel @Inject constructor(
     private val _currentPermissionDialog = mutableStateOf<AppPermission?>(null)
     val currentPermissionDialog: State<AppPermission?> = _currentPermissionDialog
 
+    private val _hasAlarmPermission = mutableStateOf(true)
+    val hasAlarmPermission: State<Boolean> = _hasAlarmPermission
+
+    private val _hasOverlayPermission = mutableStateOf(true)
+    val hasOverlayPermission: State<Boolean> = _hasOverlayPermission
+
+    private val _hasUsageStatsPermission = mutableStateOf(true)
+    val hasUsageStatsPermission: State<Boolean> = _hasUsageStatsPermission
+
     fun checkPermissions() {
         val missingPermissions = mutableListOf<AppPermission>()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmPermissionGranted()) {
-            missingPermissions.add(AppPermission.EXACT_ALARM)
-        }
+        val alarmOk = !(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmPermissionGranted())
+        val overlayOk = overlayPermissionGranted()
+        val usageOk = usageStatsPermissionGranted()
 
-        if (!overlayPermissionGranted()) {
-            missingPermissions.add(AppPermission.OVERLAY)
-        }
+        _hasAlarmPermission.value = alarmOk
+        _hasOverlayPermission.value = overlayOk
+        _hasUsageStatsPermission.value = usageOk
 
-        if (!usageStatsPermissionGranted()) {
-            missingPermissions.add(AppPermission.USAGE_STATS)
-        }
+        if (!alarmOk) missingPermissions.add(AppPermission.EXACT_ALARM)
+        if (!overlayOk) missingPermissions.add(AppPermission.OVERLAY)
+        if (!usageOk) missingPermissions.add(AppPermission.USAGE_STATS)
 
         missingPermissionsQueue = missingPermissions
         _currentPermissionDialog.value = missingPermissionsQueue.firstOrNull()
@@ -53,7 +62,8 @@ class PermissionViewModel @Inject constructor(
     fun dismissCurrentDialog() {
         val currentPermission = _currentPermissionDialog.value ?: return
         val currentIndex = missingPermissionsQueue.indexOf(currentPermission)
-        _currentPermissionDialog.value = missingPermissionsQueue.drop(currentIndex + 1).firstOrNull()
+        _currentPermissionDialog.value =
+            missingPermissionsQueue.drop(currentIndex + 1).firstOrNull()
     }
 
     private fun hideCurrentDialog() {

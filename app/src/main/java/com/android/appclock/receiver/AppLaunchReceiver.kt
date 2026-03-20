@@ -80,7 +80,11 @@ class AppLaunchReceiver : BroadcastReceiver() {
         }
     }
 
-    private suspend fun verifyAndUpdateStatus(context: Context, packageName: String, scheduleId: Int) {
+    private suspend fun verifyAndUpdateStatus(
+        context: Context,
+        packageName: String,
+        scheduleId: Int
+    ) {
         // Wait a few seconds for the app to launch.
         delay(3000)
 
@@ -125,6 +129,7 @@ class AppLaunchReceiver : BroadcastReceiver() {
                 .plusMonths(1)
                 .toInstant()
                 .toEpochMilli()
+
             RecurringType.NONE -> return
         }
 
@@ -142,7 +147,8 @@ class AppLaunchReceiver : BroadcastReceiver() {
     }
 
     private fun sendNotification(context: Context, appName: String, success: Boolean) {
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "app_launch_channel"
 
         val channel = NotificationChannel(
@@ -175,7 +181,11 @@ class AppLaunchReceiver : BroadcastReceiver() {
         ).scheduleRepository()
     }
 
-    private suspend fun updateScheduleStatus(repository: ScheduleRepository, scheduleId: Int, status: ScheduleStatus) {
+    private suspend fun updateScheduleStatus(
+        repository: ScheduleRepository,
+        scheduleId: Int,
+        status: ScheduleStatus
+    ) {
         if (scheduleId < 0) {
             Log.w(TAG, "Skipping status update for invalid schedule id: $scheduleId")
             return

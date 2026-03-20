@@ -15,7 +15,7 @@ class AppLaunchTracker @Inject constructor(private val application: Application)
     fun verifyAppLaunched(packageName: String, afterTimeMillis: Long): Boolean {
         val usageStatsManager =
             application.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        
+
         val endTime = System.currentTimeMillis()
         val beginTime = afterTimeMillis
 
@@ -31,7 +31,7 @@ class AppLaunchTracker @Inject constructor(private val application: Application)
                 return true
             }
         }
-        
+
         return false
     }
 }

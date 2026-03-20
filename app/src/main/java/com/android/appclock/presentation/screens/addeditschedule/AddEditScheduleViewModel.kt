@@ -18,8 +18,8 @@ import com.android.appclock.domain.usecase.ScheduleUseCases
 import com.android.appclock.presentation.common.InstalledAppUI
 import com.android.appclock.presentation.common.SchedulesDataUI
 import com.android.appclock.utils.AppIconLoader
-import com.android.appclock.utils.Constants.SCHEDULE_ID_DEFAULT
 import com.android.appclock.utils.Constants.NAV_ARG_SCHEDULE_ID
+import com.android.appclock.utils.Constants.SCHEDULE_ID_DEFAULT
 import com.android.appclock.utils.Constants.SCHEDULE_ID_INVALID
 import com.android.appclock.utils.DateTimeUtil
 import com.android.appclock.utils.DateTimeUtil.getFormattedDate
@@ -133,7 +133,7 @@ class AddEditScheduleViewModel @Inject constructor(
             // Don't validate immediately - defer to when screen is shown
         }
     }
-    
+
     fun startValidation() {
         validateEditSchedule()
     }
@@ -189,7 +189,8 @@ class AddEditScheduleViewModel @Inject constructor(
 
         viewModelScope.launch {
             val currentId = _editScheduleState.value.id
-            val isEditingExisting = currentId != SCHEDULE_ID_DEFAULT && currentId != SCHEDULE_ID_INVALID
+            val isEditingExisting =
+                currentId != SCHEDULE_ID_DEFAULT && currentId != SCHEDULE_ID_INVALID
 
             if (isEditingExisting) {
                 // Prevent stale alarms from old time/status when editing.

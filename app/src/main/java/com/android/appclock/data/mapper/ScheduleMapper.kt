@@ -6,7 +6,7 @@ import com.android.appclock.utils.DateTimeUtil.getFormattedDate2
 import com.android.appclock.utils.DateTimeUtil.getFormattedTime2
 
 object ScheduleMapper {
-    
+
     fun toUiModel(entity: ScheduleAppEntity): SchedulesDataUI {
         return SchedulesDataUI(
             id = entity.id,
@@ -19,7 +19,7 @@ object ScheduleMapper {
             recurringType = entity.recurringType
         )
     }
-    
+
     fun toUiModelList(entities: List<ScheduleAppEntity>): List<SchedulesDataUI> {
         return entities.map { toUiModel(it) }
     }

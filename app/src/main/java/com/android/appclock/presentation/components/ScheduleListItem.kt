@@ -93,7 +93,10 @@ fun ScheduleListItem(
         colors = CardDefaults.cardColors(
             containerColor = when {
                 isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-                schedule.status == ScheduleStatus.LAUNCHED -> ScheduleStatus.LAUNCHED.uiColor.copy(alpha = 0.08f)
+                schedule.status == ScheduleStatus.LAUNCHED -> ScheduleStatus.LAUNCHED.uiColor.copy(
+                    alpha = 0.08f
+                )
+
                 schedule.status == ScheduleStatus.FAILED -> ScheduleStatus.FAILED.uiColor.copy(alpha = 0.08f)
                 else -> MaterialTheme.colorScheme.surface
             }
@@ -109,7 +112,9 @@ fun ScheduleListItem(
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = if (isSelected) "Selected" else "Not Selected",
-                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(
+                        alpha = 0.38f
+                    ),
                     modifier = Modifier
                         .size(24.dp)
                         .padding(end = 12.dp)

@@ -27,13 +27,13 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,14 +46,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.android.appclock.core.common.ScheduleValidity
 import com.android.appclock.data.model.RecurringType
-import com.android.appclock.data.model.ScheduleStatus
 import com.android.appclock.presentation.common.SchedulesDataUI
-import com.android.appclock.presentation.common.uiIcon
-import com.android.appclock.presentation.components.AppIconImage
 import com.android.appclock.presentation.components.AppBasicTextField
+import com.android.appclock.presentation.components.AppIconImage
 import com.android.appclock.presentation.components.CustomAppBarEditScreen
 import com.android.appclock.presentation.components.DockedDatePicker
+import com.android.appclock.presentation.components.SectionCard
+import com.android.appclock.presentation.components.SectionHeader
 import com.android.appclock.presentation.components.SelectableCard
+import com.android.appclock.presentation.components.StatusChip
 import com.android.appclock.presentation.components.TimePickerDialog
 import com.android.appclock.ui.theme.ClockBlue
 import com.android.appclock.ui.theme.ClockBlueDark
@@ -74,7 +75,7 @@ fun AddEditScheduleScreen(
         // Start validation after screen is composable
         viewModel.startValidation()
     }
-    
+
     val schedule = viewModel.editScheduleState.value
     val installedApps = viewModel.installedApps
 
@@ -134,7 +135,10 @@ fun AddEditScheduleScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            SectionTitle()
+            SectionHeader(
+                title = "App & timing",
+                subtitle = "Pick the app, date, and time for this launch."
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -278,10 +282,12 @@ fun AddEditScheduleScreen(
                             onClick = {
                                 viewModel.onEvent(AddEditScheduleEvent.EnteredRecurringType(type))
                             },
-                            label = { Text(
-                                text = type.displayName,
-                                style = MaterialTheme.typography.labelSmall
-                            ) },
+                            label = {
+                                Text(
+                                    text = type.displayName,
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            },
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -416,88 +422,4 @@ private fun AddEditHeroCard(
 }
 
 
-@Composable
-private fun SectionTitle() {
-    Column {
-        Text(
-            text = "App & timing",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Text(
-            text = "Pick the app, date, and time for this launch.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
 
-@Composable
-private fun SectionCard(
-    title: String,
-    subtitle: String,
-    leadingIcon: androidx.compose.ui.graphics.vector.ImageVector,
-    content: @Composable () -> Unit
-) {
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(28.dp)
-    ) {
-        Column(modifier = Modifier.padding(18.dp)) {
-            Row {
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-                ) {
-                    Icon(
-                        imageVector = leadingIcon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(12.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.size(12.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            content()
-        }
-    }
-}
-
-@Composable
-private fun StatusChip(status: ScheduleStatus) {
-    Surface(
-        shape = RoundedCornerShape(999.dp),
-        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.14f)
-    ) {
-        Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-            Icon(
-                imageVector = status.uiIcon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(16.dp)
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            Text(
-                text = status.name,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-        }
-    }
-}

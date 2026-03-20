@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,9 +21,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -36,12 +32,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.android.appclock.data.model.ScheduleStatus
 import com.android.appclock.presentation.common.SchedulesDataUI
+import com.android.appclock.presentation.components.EmptyStateCard
+import com.android.appclock.presentation.components.HeroMetricCard
+import com.android.appclock.presentation.components.LoadingCard
 import com.android.appclock.presentation.components.ScheduleListItem
 import com.android.appclock.presentation.navigation.Screen
 import com.android.appclock.ui.theme.ClockBlue
@@ -65,7 +63,12 @@ fun HomeScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 104.dp),
+            contentPadding = PaddingValues(
+                start = 20.dp,
+                end = 20.dp,
+                top = 12.dp,
+                bottom = 104.dp
+            ),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
             item {
@@ -105,13 +108,21 @@ fun HomeScreen(
 
             when {
                 isLoading -> {
-                    item { LoadingHomeCard() }
+                    item {
+                        LoadingCard(
+                            title = "Loading your schedules",
+                            subtitle = "Refreshing upcoming launches and recent edits."
+                        )
+                    }
                 }
 
                 schedules.isEmpty() -> {
                     item {
-                        EmptyHomeState(
-                            onAddSchedule = { navController.navigate(Screen.AddEditSchedule.route) }
+                        EmptyStateCard(
+                            title = "No schedules yet",
+                            subtitle = "Tap the button below to schedule your first app launch.",
+                            buttonText = "Create my first schedule",
+                            onButtonClick = { navController.navigate(Screen.AddEditSchedule.route) }
                         )
                     }
                 }
@@ -223,8 +234,16 @@ private fun HomeHeroCard(
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                HeroMetric(title = "Upcoming", value = upcomingCount.toString())
-                HeroMetric(title = "Canceled", value = canceledCount.toString())
+                HeroMetricCard(
+                    title = "Upcoming",
+                    value = upcomingCount.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+                HeroMetricCard(
+                    title = "Canceled",
+                    value = canceledCount.toString(),
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Surface(
@@ -279,95 +298,5 @@ private fun HomeHeroCard(
     }
 }
 
-@Composable
-private fun RowScope.HeroMetric(
-    title: String,
-    value: String
-) {
-    Surface(
-        modifier = Modifier.weight(1f),
-        shape = RoundedCornerShape(22.dp),
-        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.12f)
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
-            )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
 
-@Composable
-private fun LoadingHomeCard() {
-    ElevatedCard(
-        shape = RoundedCornerShape(28.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 28.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(28.dp),
-                strokeWidth = 3.dp
-            )
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
-                    text = "Loading your schedules",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "Refreshing upcoming launches and recent edits.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
 
-@Composable
-private fun EmptyHomeState(
-    onAddSchedule: () -> Unit
-) {
-    ElevatedCard(
-        shape = RoundedCornerShape(28.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp)
-        ) {
-            Text(
-                text = "No schedules yet",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = "Tap the button below to schedule your first app launch.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            FilledTonalButton(onClick = onAddSchedule) {
-                Text(text = "Create my first schedule")
-            }
-        }
-    }
-}

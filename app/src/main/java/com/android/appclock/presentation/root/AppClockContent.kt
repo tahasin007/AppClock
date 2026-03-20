@@ -14,15 +14,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.android.appclock.presentation.components.DrawerMenuContent
 import com.android.appclock.presentation.components.PermissionDialog
 import com.android.appclock.presentation.navigation.AppNavHost
-import com.android.appclock.presentation.navigation.Screen
 import kotlinx.coroutines.launch
 
 @Composable
@@ -56,16 +55,12 @@ fun AppClockContent(viewModel: PermissionViewModel = hiltViewModel()) {
         drawerContent = {
             ModalDrawerSheet {
                 DrawerMenuContent(
-                    onHistoryClick = {
-                        scope.launch {
-                            drawerState.close()
-                        }
-                        navController.navigate(Screen.History.route)
-                    },
+                    hasAlarmPermission = viewModel.hasAlarmPermission.value,
+                    hasOverlayPermission = viewModel.hasOverlayPermission.value,
+                    hasUsageStatsPermission = viewModel.hasUsageStatsPermission.value,
+                    onFixPermissions = { viewModel.checkPermissions() },
                     onCloseClick = {
-                        scope.launch {
-                            drawerState.close()
-                        }
+                        scope.launch { drawerState.close() }
                     }
                 )
             }
