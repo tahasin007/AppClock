@@ -23,7 +23,9 @@ import com.android.appclock.presentation.screens.home.HomeScreen
 import com.android.appclock.presentation.screens.usagemonitoring.AddEditUsageMonitoringScreen
 import com.android.appclock.presentation.screens.usagemonitoring.UsageMonitoringScreen
 import com.android.appclock.utils.Constants.NAV_ARG_SCHEDULE_ID
+import com.android.appclock.utils.Constants.NAV_ARG_USAGE_MONITORING_RULE_ID
 import com.android.appclock.utils.Constants.SCHEDULE_ID_INVALID
+import com.android.appclock.utils.Constants.USAGE_MONITORING_RULE_ID_INVALID
 
 @Composable
 fun AppNavHost(
@@ -49,7 +51,14 @@ fun AppNavHost(
             UsageMonitoringScreen(navController = navController)
         }
         composable(
-            route = Screen.AddEditUsageMonitoring.route,
+            route = Screen.AddEditUsageMonitoring.route +
+                    "?$NAV_ARG_USAGE_MONITORING_RULE_ID={$NAV_ARG_USAGE_MONITORING_RULE_ID}",
+            arguments = listOf(
+                navArgument(NAV_ARG_USAGE_MONITORING_RULE_ID) {
+                    type = NavType.IntType
+                    defaultValue = USAGE_MONITORING_RULE_ID_INVALID
+                }
+            ),
             enterTransition = { enterTransition() },
             exitTransition = { exitTransition() },
         ) {

@@ -42,7 +42,8 @@ fun CustomAppBarEditScreen(
     isNewSchedule: Boolean,
     title: String? = null,
     subtitle: String? = null,
-    showActions: Boolean = true
+    showActions: Boolean = true,
+    showStatusChips: Boolean = true
 ) {
     val context = LocalContext.current
 
@@ -144,7 +145,7 @@ fun CustomAppBarEditScreen(
                 }
             }
 
-            if (!isNewSchedule) {
+            if (!isNewSchedule && showStatusChips) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),

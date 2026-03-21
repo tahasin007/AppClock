@@ -1,25 +1,25 @@
 package com.android.appclock.presentation.screens.usagemonitoring
 
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -27,20 +27,30 @@ import com.android.appclock.core.common.ScheduleValidity
 import com.android.appclock.data.model.ScheduleStatus
 import com.android.appclock.presentation.components.CustomAppBarEditScreen
 import com.android.appclock.presentation.components.EmptyStateCard
+import com.android.appclock.presentation.components.LoadingCard
 import com.android.appclock.presentation.components.SectionHeader
-import com.android.appclock.presentation.components.TrackedUsageRuleCard
+import com.android.appclock.presentation.components.UsageAppCard
+import com.android.appclock.presentation.components.UsageSummaryCard
 import com.android.appclock.presentation.navigation.Screen
+import com.android.appclock.utils.Constants.NAV_ARG_USAGE_MONITORING_RULE_ID
 
 @Composable
 fun UsageMonitoringScreen(
     navController: NavController,
     viewModel: UsageMonitoringViewModel = hiltViewModel()
 ) {
-    val trackedApps = remember {
-        listOf(
-            TrackedUsageAppUi("Instagram", "com.instagram.android", "2h 00m", "Near limit"),
-            TrackedUsageAppUi("YouTube", "com.google.android.youtube", "1h 30m", "In range")
-        )
+    val context = LocalContext.current
+    val trackedRules = viewModel.trackedRules
+    val summary = viewModel.summaryState.value
+    val isLoading = viewModel.isLoading.value
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshUsageSnapshot()
+    }
+
+    DisposableEffect(Unit) {
+        viewModel.startRefreshing()
+        onDispose { viewModel.stopRefreshing() }
     }
 
     Column(
@@ -58,7 +68,8 @@ fun UsageMonitoringScreen(
             isNewSchedule = true,
             title = "Usage monitoring",
             subtitle = "Choose apps to monitor when they are in the foreground.",
-            showActions = false
+            showActions = false,
+            showStatusChips = false
         )
 
         LazyColumn(
@@ -82,25 +93,55 @@ fun UsageMonitoringScreen(
                 }
             }
 
-            if (trackedApps.isEmpty()) {
+            if (trackedRules.isNotEmpty() || !summary.hasUsageAccess) {
                 item {
-                    EmptyStateCard(
-                        title = "No tracked apps yet",
-                        subtitle = "Add your first monitored app to set a daily limit and notifications.",
-                        buttonText = "Add monitored app",
-                        onButtonClick = { navController.navigate(Screen.AddEditUsageMonitoring.route) }
+                    UsageSummaryCard(
+                        foregroundAppName = summary.foregroundAppName,
+                        totalUsageTodayLabel = summary.totalUsageTodayLabel,
+                        reachedLimitCount = summary.reachedLimitCount,
+                        nearLimitCount = summary.nearLimitCount
                     )
                 }
-            } else {
-                items(trackedApps, key = { it.packageName }) { app ->
-                    TrackedUsageRuleCard(
-                        appName = app.appName,
-                        packageName = app.packageName,
-                        dailyLimitLabel = app.dailyLimitLabel,
-                        statusLabel = app.statusLabel,
-                        appIconLoader = viewModel.appIconLoader,
-                        onEditClick = { navController.navigate(Screen.AddEditUsageMonitoring.route) }
-                    )
+            }
+
+            when {
+                isLoading && trackedRules.isEmpty() -> {
+                    item {
+                        LoadingCard(
+                            title = "Loading tracked apps",
+                            subtitle = "Refreshing monitored apps and today’s foreground usage."
+                        )
+                    }
+                }
+
+                trackedRules.isEmpty() -> {
+                    item {
+                        EmptyStateCard(
+                            title = "No tracked apps yet",
+                            subtitle = "Add your first monitored app to set a daily limit and notifications.",
+                            buttonText = "Add monitored app",
+                            onButtonClick = { navController.navigate(Screen.AddEditUsageMonitoring.route) }
+                        )
+                    }
+                }
+
+                else -> {
+                    items(trackedRules, key = { it.id }) { rule ->
+                        UsageAppCard(
+                            appName = rule.appName,
+                            usageLabel = rule.usageLabel,
+                            limitLabel = rule.limitLabel,
+                            progress = rule.progress,
+                            isForeground = rule.isForeground,
+                            statusLabel = rule.statusLabel,
+                            onSetLimitClick = {
+                                navController.navigate(
+                                    Screen.AddEditUsageMonitoring.route +
+                                            "?$NAV_ARG_USAGE_MONITORING_RULE_ID=${rule.id}"
+                                )
+                            }
+                        )
+                    }
                 }
             }
 
@@ -110,33 +151,36 @@ fun UsageMonitoringScreen(
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier.padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        androidx.compose.material3.Icon(
-                            imageVector = Icons.Default.Visibility,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
-                        )
                         Text(
-                            text = "Foreground monitoring uses usage access. Daily counters reset each day and history stays available.",
+                            text = if (summary.hasUsageAccess) {
+                                "Usage access is enabled. Daily counters reset each day and foreground usage is refreshed while this screen is open."
+                            } else {
+                                "Usage access is required to calculate foreground screen time for your monitored apps."
+                            },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+
+                        if (!summary.hasUsageAccess) {
+                            FilledTonalButton(
+                                onClick = {
+                                    context.startActivity(
+                                        Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        }
+                                    )
+                                }
+                            ) {
+                                Text("Grant usage access")
+                            }
+                        }
                     }
                 }
             }
         }
     }
 }
-
-private data class TrackedUsageAppUi(
-    val appName: String,
-    val packageName: String,
-    val dailyLimitLabel: String,
-    val statusLabel: String
-)
-

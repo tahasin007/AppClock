@@ -35,5 +35,45 @@ object DatabaseMigrations {
             db.execSQL("ALTER TABLE schedules ADD COLUMN recurringType TEXT NOT NULL DEFAULT 'NONE'")
         }
     }
+
+    val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                    CREATE TABLE IF NOT EXISTS usage_monitoring_rules (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        appName TEXT NOT NULL,
+                        packageName TEXT NOT NULL,
+                        dailyLimitMinutes INTEGER NOT NULL,
+                        notifyAt80Percent INTEGER NOT NULL DEFAULT 1,
+                        notifyAt100Percent INTEGER NOT NULL DEFAULT 1,
+                        isActive INTEGER NOT NULL DEFAULT 1
+                    )
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                    CREATE UNIQUE INDEX IF NOT EXISTS index_usage_monitoring_rules_packageName
+                    ON usage_monitoring_rules(packageName)
+                """.trimIndent()
+            )
+        }
+    }
+
+    val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                    CREATE TABLE IF NOT EXISTS usage_monitoring_alert_state (
+                        ruleId INTEGER NOT NULL,
+                        dateKey TEXT NOT NULL,
+                        notifiedAt80 INTEGER NOT NULL DEFAULT 0,
+                        notifiedAt100 INTEGER NOT NULL DEFAULT 0,
+                        PRIMARY KEY(ruleId, dateKey)
+                    )
+                """.trimIndent()
+            )
+        }
+    }
 }
 

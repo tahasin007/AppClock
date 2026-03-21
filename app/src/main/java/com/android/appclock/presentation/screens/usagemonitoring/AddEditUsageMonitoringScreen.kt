@@ -21,19 +21,13 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.android.appclock.core.common.ScheduleValidity
 import com.android.appclock.data.model.ScheduleStatus
-import com.android.appclock.presentation.common.InstalledAppUI
 import com.android.appclock.presentation.components.CustomAppBarEditScreen
 import com.android.appclock.presentation.components.InstalledAppSelectorField
 import com.android.appclock.presentation.components.SectionCard
@@ -47,16 +41,11 @@ fun AddEditUsageMonitoringScreen(
         viewModel.loadInstalledAppsIfNeeded()
     }
 
+    val uiState = viewModel.uiState.value
     val installedApps = viewModel.installedApps
     val expanded = viewModel.expanded.value
-    val isEditingRule = false
-
-    var selectedApp by remember { mutableStateOf<InstalledAppUI?>(null) }
-    var hours by remember { mutableStateOf("2") }
-    var minutes by remember { mutableStateOf("00") }
-    var notifyAt80 by remember { mutableStateOf(true) }
-    var notifyAt100 by remember { mutableStateOf(true) }
-    var isActive by remember { mutableStateOf(true) }
+    val validityState = viewModel.validityState.value
+    val isEditingRule = !uiState.isNewRule
 
     Column(
         modifier = Modifier
@@ -65,15 +54,16 @@ fun AddEditUsageMonitoringScreen(
     ) {
         CustomAppBarEditScreen(
             onBackClick = { navController.popBackStack() },
-            onDeleteClick = { navController.popBackStack() },
+            onDeleteClick = { viewModel.deleteRule { navController.popBackStack() } },
             onChangeScheduleStatus = {},
-            onSaveClick = { navController.popBackStack() },
-            validityState = ScheduleValidity.VALID,
+            onSaveClick = { viewModel.saveRule { navController.popBackStack() } },
+            validityState = validityState,
             scheduleStatus = ScheduleStatus.UPCOMING,
-            isNewSchedule = !isEditingRule,
+            isNewSchedule = uiState.isNewRule,
             title = if (isEditingRule) "Edit monitored app" else "Add monitored app",
             subtitle = "Pick one app and set its daily usage limit.",
-            showActions = true
+            showActions = true,
+            showStatusChips = false
         )
 
         LazyColumn(
@@ -88,14 +78,14 @@ fun AddEditUsageMonitoringScreen(
                     leadingIcon = Icons.Default.Apps
                 ) {
                     InstalledAppSelectorField(
-                        selectedApp = selectedApp,
+                        selectedApp = uiState.selectedApp,
                         installedApps = installedApps,
                         expanded = expanded,
                         appIconLoader = viewModel.appIconLoader,
                         onExpandRequest = { viewModel.toggleDropdown() },
                         onDismissRequest = { viewModel.toggleDropdown() },
                         onAppSelected = { app ->
-                            selectedApp = app
+                            viewModel.onAppSelected(app)
                             viewModel.toggleDropdown()
                         },
                         title = "Track app"
@@ -111,20 +101,16 @@ fun AddEditUsageMonitoringScreen(
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         OutlinedTextField(
-                            value = hours,
-                            onValueChange = { input ->
-                                if (input.all { it.isDigit() } && input.length <= 2) hours = input
-                            },
+                            value = uiState.hours,
+                            onValueChange = viewModel::onHoursChanged,
                             label = { Text("Hours") },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.weight(1f)
                         )
                         OutlinedTextField(
-                            value = minutes,
-                            onValueChange = { input ->
-                                if (input.all { it.isDigit() } && input.length <= 2) minutes = input
-                            },
+                            value = uiState.minutes,
+                            onValueChange = viewModel::onMinutesChanged,
                             label = { Text("Minutes") },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -142,14 +128,14 @@ fun AddEditUsageMonitoringScreen(
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         FilterChip(
-                            selected = notifyAt80,
-                            onClick = { notifyAt80 = !notifyAt80 },
+                            selected = uiState.notifyAt80Percent,
+                            onClick = viewModel::toggleNotifyAt80,
                             label = { Text("Notify at 80%") },
                             modifier = Modifier.weight(1f)
                         )
                         FilterChip(
-                            selected = notifyAt100,
-                            onClick = { notifyAt100 = !notifyAt100 },
+                            selected = uiState.notifyAt100Percent,
+                            onClick = viewModel::toggleNotifyAt100,
                             label = { Text("Notify at 100%") },
                             modifier = Modifier.weight(1f)
                         )
@@ -177,12 +163,12 @@ fun AddEditUsageMonitoringScreen(
                         ) {
                             Column {
                                 Text(
-                                    text = if (isActive) "Active" else "Paused",
+                                    text = if (uiState.isActive) "Active" else "Paused",
                                     style = MaterialTheme.typography.titleSmall,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    text = if (isActive) {
+                                    text = if (uiState.isActive) {
                                         "Foreground usage is monitored for this app."
                                     } else {
                                         "Tracking is paused until you enable it again."
@@ -192,15 +178,13 @@ fun AddEditUsageMonitoringScreen(
                                 )
                             }
                             Switch(
-                                checked = isActive,
-                                onCheckedChange = { isActive = it }
+                                checked = uiState.isActive,
+                                onCheckedChange = viewModel::onActiveChanged
                             )
                         }
                     }
                 }
             }
-
         }
     }
 }
-
