@@ -35,7 +35,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.android.appclock.data.model.ScheduleStatus
+import com.android.appclock.core.utils.AppIconLoader
+import com.android.appclock.domain.model.ScheduleStatus
 import com.android.appclock.presentation.components.EmptyDataView
 import com.android.appclock.presentation.components.FilterButton
 import com.android.appclock.presentation.components.GradientHeroCard
@@ -196,7 +197,7 @@ private fun HistoryHeroCard(
     launchedCount: Int,
     failedCount: Int,
     latestSchedule: com.android.appclock.presentation.common.SchedulesDataUI?,
-    appIconLoader: com.android.appclock.utils.AppIconLoader
+    appIconLoader: AppIconLoader
 ) {
     val heroTitleColor = Color.White
 

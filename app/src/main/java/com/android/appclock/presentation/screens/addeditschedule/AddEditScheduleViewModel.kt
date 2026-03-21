@@ -9,21 +9,22 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.appclock.core.common.ScheduleValidity
-import com.android.appclock.data.alarm.AlarmScheduler
-import com.android.appclock.data.mapper.ScheduleMapper
-import com.android.appclock.data.model.ScheduleStatus
+import com.android.appclock.core.utils.AppIconLoader
+import com.android.appclock.core.utils.Constants.NAV_ARG_SCHEDULE_ID
+import com.android.appclock.core.utils.Constants.SCHEDULE_ID_DEFAULT
+import com.android.appclock.core.utils.Constants.SCHEDULE_ID_INVALID
+import com.android.appclock.core.utils.DateTimeUtil
+import com.android.appclock.core.utils.DateTimeUtil.getFormattedDate
+import com.android.appclock.core.utils.DateTimeUtil.getFormattedTime
+import com.android.appclock.domain.model.RecurringType
 import com.android.appclock.domain.model.ScheduleAppEntity
+import com.android.appclock.domain.model.ScheduleStatus
+import com.android.appclock.domain.service.AppLaunchScheduler
 import com.android.appclock.domain.usecase.GetInstalledAppsUseCase
 import com.android.appclock.domain.usecase.ScheduleUseCases
 import com.android.appclock.presentation.common.InstalledAppUI
 import com.android.appclock.presentation.common.SchedulesDataUI
-import com.android.appclock.utils.AppIconLoader
-import com.android.appclock.utils.Constants.NAV_ARG_SCHEDULE_ID
-import com.android.appclock.utils.Constants.SCHEDULE_ID_DEFAULT
-import com.android.appclock.utils.Constants.SCHEDULE_ID_INVALID
-import com.android.appclock.utils.DateTimeUtil
-import com.android.appclock.utils.DateTimeUtil.getFormattedDate
-import com.android.appclock.utils.DateTimeUtil.getFormattedTime
+import com.android.appclock.presentation.mapper.ScheduleUiMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
@@ -35,7 +36,7 @@ import javax.inject.Inject
 class AddEditScheduleViewModel @Inject constructor(
     private val scheduleUseCases: ScheduleUseCases,
     private val installedAppUseCase: GetInstalledAppsUseCase,
-    private val alarmScheduler: AlarmScheduler,
+    private val appLaunchScheduler: AppLaunchScheduler,
     val appIconLoader: AppIconLoader,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -142,7 +143,7 @@ class AddEditScheduleViewModel @Inject constructor(
         viewModelScope.launch {
             val scheduleId = _editScheduleState.value.id
             if (scheduleId != SCHEDULE_ID_DEFAULT && scheduleId != SCHEDULE_ID_INVALID) {
-                alarmScheduler.cancelScheduledLaunch(scheduleId)
+                appLaunchScheduler.cancelScheduledLaunch(scheduleId)
                 scheduleUseCases.deleteScheduleById(scheduleId)
             }
         }
@@ -165,7 +166,7 @@ class AddEditScheduleViewModel @Inject constructor(
         }
     }
 
-    private fun enterRecurringType(recurringType: com.android.appclock.data.model.RecurringType) {
+    private fun enterRecurringType(recurringType: RecurringType) {
         if (_editScheduleState.value.recurringType != recurringType) {
             _editScheduleState.value = _editScheduleState.value.copy(recurringType = recurringType)
             validateEditSchedule()
@@ -194,11 +195,11 @@ class AddEditScheduleViewModel @Inject constructor(
 
             if (isEditingExisting) {
                 // Prevent stale alarms from old time/status when editing.
-                alarmScheduler.cancelScheduledLaunch(currentId)
+                appLaunchScheduler.cancelScheduledLaunch(currentId)
                 scheduleUseCases.editSchedule(newSchedule.copy(id = currentId))
 
                 if (newSchedule.status == ScheduleStatus.UPCOMING) {
-                    alarmScheduler.scheduleAppLaunch(
+                    appLaunchScheduler.scheduleAppLaunch(
                         currentId,
                         newSchedule.packageName,
                         newSchedule.scheduledDateTime
@@ -207,7 +208,7 @@ class AddEditScheduleViewModel @Inject constructor(
             } else {
                 val scheduleId = scheduleUseCases.addSchedule(newSchedule).toInt()
                 if (scheduleId != SCHEDULE_ID_INVALID && newSchedule.status == ScheduleStatus.UPCOMING) {
-                    alarmScheduler.scheduleAppLaunch(
+                    appLaunchScheduler.scheduleAppLaunch(
                         scheduleId,
                         newSchedule.packageName,
                         newSchedule.scheduledDateTime
@@ -231,7 +232,7 @@ class AddEditScheduleViewModel @Inject constructor(
         if (getSchedulesJob == null) {
             getSchedulesJob = scheduleUseCases.getSchedules()
                 .onEach { scheduleEntities ->
-                    val uiDataList = ScheduleMapper.toUiModelList(scheduleEntities)
+                    val uiDataList = ScheduleUiMapper.toUiModelList(scheduleEntities)
                     _schedulesState.clear()
                     _schedulesState.addAll(uiDataList)
                 }

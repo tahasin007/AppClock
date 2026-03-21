@@ -27,7 +27,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.android.appclock.data.model.ScheduleStatus
+import com.android.appclock.domain.model.ScheduleStatus
 import com.android.appclock.presentation.components.CustomAppBarEditScreen
 import com.android.appclock.presentation.components.InstalledAppSelectorField
 import com.android.appclock.presentation.components.SectionCard

@@ -6,25 +6,25 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.android.appclock.domain.model.ScheduleAppEntity
+import com.android.appclock.data.source.entity.ScheduleDbEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ScheduleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSchedule(schedule: ScheduleAppEntity): Long
+    suspend fun insertSchedule(schedule: ScheduleDbEntity): Long
 
     @Update
-    suspend fun updateSchedule(schedule: ScheduleAppEntity)
+    suspend fun updateSchedule(schedule: ScheduleDbEntity)
 
     @Delete
-    suspend fun deleteSchedule(schedule: ScheduleAppEntity)
+    suspend fun deleteSchedule(schedule: ScheduleDbEntity)
 
     @Query("SELECT * FROM schedules ORDER BY scheduledDateTime ASC")
-    fun getAllSchedules(): Flow<List<ScheduleAppEntity>>
+    fun getAllSchedules(): Flow<List<ScheduleDbEntity>>
 
     @Query("SELECT * FROM schedules WHERE id = :id")
-    suspend fun getScheduleById(id: Int): ScheduleAppEntity?
+    suspend fun getScheduleById(id: Int): ScheduleDbEntity?
 
     @Query("DELETE FROM schedules WHERE id = :id")
     suspend fun deleteScheduleById(id: Int)

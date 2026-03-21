@@ -27,7 +27,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.android.appclock.core.common.ScheduleValidity
-import com.android.appclock.data.model.ScheduleStatus
+import com.android.appclock.domain.model.ScheduleStatus
 import com.android.appclock.presentation.common.uiColor
 import com.android.appclock.presentation.common.uiIcon
 

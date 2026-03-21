@@ -16,16 +16,16 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.android.appclock.core.utils.Constants.NAV_ARG_SCHEDULE_ID
+import com.android.appclock.core.utils.Constants.NAV_ARG_USAGE_MONITORING_RULE_ID
+import com.android.appclock.core.utils.Constants.SCHEDULE_ID_INVALID
+import com.android.appclock.core.utils.Constants.USAGE_MONITORING_RULE_ID_INVALID
 import com.android.appclock.presentation.screens.addeditschedule.AddEditScheduleScreen
 import com.android.appclock.presentation.screens.applaunch.AppLaunchScreen
 import com.android.appclock.presentation.screens.history.HistoryScreen
 import com.android.appclock.presentation.screens.home.HomeScreen
 import com.android.appclock.presentation.screens.usagemonitoring.AddEditUsageMonitoringScreen
 import com.android.appclock.presentation.screens.usagemonitoring.UsageMonitoringScreen
-import com.android.appclock.utils.Constants.NAV_ARG_SCHEDULE_ID
-import com.android.appclock.utils.Constants.NAV_ARG_USAGE_MONITORING_RULE_ID
-import com.android.appclock.utils.Constants.SCHEDULE_ID_INVALID
-import com.android.appclock.utils.Constants.USAGE_MONITORING_RULE_ID_INVALID
 
 @Composable
 fun AppNavHost(

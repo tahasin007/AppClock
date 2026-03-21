@@ -6,15 +6,16 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
+import com.android.appclock.core.utils.Constants.ACTION_TRIGGER_ALARM
+import com.android.appclock.core.utils.Constants.EXTRA_PACKAGE_NAME
+import com.android.appclock.core.utils.Constants.EXTRA_SCHEDULE_ID
+import com.android.appclock.domain.service.AppLaunchScheduler
 import com.android.appclock.receiver.AppLaunchReceiver
-import com.android.appclock.utils.Constants.ACTION_TRIGGER_ALARM
-import com.android.appclock.utils.Constants.EXTRA_PACKAGE_NAME
-import com.android.appclock.utils.Constants.EXTRA_SCHEDULE_ID
 import javax.inject.Inject
 
 class AlarmScheduler @Inject constructor(
     private val context: Context
-) {
+) : AppLaunchScheduler {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     private fun createAlarmIntent(scheduleId: Int, packageName: String? = null): Intent {
@@ -27,7 +28,7 @@ class AlarmScheduler @Inject constructor(
         }
     }
 
-    fun scheduleAppLaunch(scheduleId: Int, packageName: String, scheduledTime: Long) {
+    override fun scheduleAppLaunch(scheduleId: Int, packageName: String, scheduledTime: Long) {
         Log.i(TAG, "Scheduling app launch - ID: $scheduleId, Package: $packageName")
 
         val intent = createAlarmIntent(scheduleId, packageName)
@@ -57,7 +58,7 @@ class AlarmScheduler @Inject constructor(
         }
     }
 
-    fun cancelScheduledLaunch(scheduleId: Int) {
+    override fun cancelScheduledLaunch(scheduleId: Int) {
         Log.i(TAG, "cancelScheduledLaunch for id[$scheduleId]")
         val intent = createAlarmIntent(scheduleId)
         val pendingIntent = PendingIntent.getBroadcast(

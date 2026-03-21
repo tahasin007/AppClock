@@ -1,6 +1,5 @@
 package com.android.appclock.presentation.screens.usagemonitoring
 
-import android.content.Context
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -9,27 +8,26 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.appclock.core.common.ScheduleValidity
-import com.android.appclock.data.monitoring.UsageLimitAlertScheduler
-import com.android.appclock.data.mapper.UsageMonitoringMapper
+import com.android.appclock.core.utils.AppIconLoader
+import com.android.appclock.core.utils.Constants.NAV_ARG_USAGE_MONITORING_RULE_ID
+import com.android.appclock.core.utils.Constants.USAGE_MONITORING_RULE_ID_DEFAULT
+import com.android.appclock.core.utils.Constants.USAGE_MONITORING_RULE_ID_INVALID
 import com.android.appclock.domain.model.UsageMonitoringRuleEntity
+import com.android.appclock.domain.service.UsageAlertScheduler
 import com.android.appclock.domain.usecase.GetInstalledAppsUseCase
 import com.android.appclock.domain.usecase.UsageMonitoringUseCases
 import com.android.appclock.presentation.common.AddEditUsageMonitoringUiState
 import com.android.appclock.presentation.common.InstalledAppUI
-import com.android.appclock.utils.AppIconLoader
-import com.android.appclock.utils.Constants.NAV_ARG_USAGE_MONITORING_RULE_ID
-import com.android.appclock.utils.Constants.USAGE_MONITORING_RULE_ID_DEFAULT
-import com.android.appclock.utils.Constants.USAGE_MONITORING_RULE_ID_INVALID
+import com.android.appclock.presentation.mapper.UsageMonitoringUiMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class AddEditUsageMonitoringViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val installedAppsUseCase: GetInstalledAppsUseCase,
     private val usageMonitoringUseCases: UsageMonitoringUseCases,
+    private val usageAlertScheduler: UsageAlertScheduler,
     val appIconLoader: AppIconLoader,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -64,7 +62,7 @@ class AddEditUsageMonitoringViewModel @Inject constructor(
 
         viewModelScope.launch {
             usageMonitoringUseCases.getRuleById(usageMonitoringRuleId)?.let { rule ->
-                val mappedState = UsageMonitoringMapper.toEditState(rule)
+                val mappedState = UsageMonitoringUiMapper.toEditState(rule)
                 _uiState.value = mappedState
                 _originalState.value = mappedState
                 revalidate()
@@ -153,7 +151,7 @@ class AddEditUsageMonitoringViewModel @Inject constructor(
             } else {
                 usageMonitoringUseCases.editRule(entity)
             }
-            UsageLimitAlertScheduler.ensureScheduled(context)
+            usageAlertScheduler.ensureScheduled()
             onSaved()
         }
     }
@@ -168,7 +166,7 @@ class AddEditUsageMonitoringViewModel @Inject constructor(
 
         viewModelScope.launch {
             usageMonitoringUseCases.deleteRuleById(currentId)
-            UsageLimitAlertScheduler.ensureScheduled(context)
+            usageAlertScheduler.ensureScheduled()
             onDeleted()
         }
     }

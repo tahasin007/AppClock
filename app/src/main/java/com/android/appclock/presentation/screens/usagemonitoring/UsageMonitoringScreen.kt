@@ -24,7 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.android.appclock.core.common.ScheduleValidity
-import com.android.appclock.data.model.ScheduleStatus
+import com.android.appclock.core.utils.Constants.NAV_ARG_USAGE_MONITORING_RULE_ID
+import com.android.appclock.domain.model.ScheduleStatus
 import com.android.appclock.presentation.components.CustomAppBarEditScreen
 import com.android.appclock.presentation.components.EmptyStateCard
 import com.android.appclock.presentation.components.LoadingCard
@@ -32,7 +33,6 @@ import com.android.appclock.presentation.components.SectionHeader
 import com.android.appclock.presentation.components.UsageAppCard
 import com.android.appclock.presentation.components.UsageSummaryCard
 import com.android.appclock.presentation.navigation.Screen
-import com.android.appclock.utils.Constants.NAV_ARG_USAGE_MONITORING_RULE_ID
 
 @Composable
 fun UsageMonitoringScreen(

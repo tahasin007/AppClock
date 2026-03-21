@@ -19,7 +19,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.android.appclock.utils.AppIconLoader
+import com.android.appclock.core.utils.AppIconLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

@@ -6,13 +6,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.appclock.data.mapper.UsageMonitoringMapper
+import com.android.appclock.core.utils.AppIconLoader
 import com.android.appclock.domain.model.UsageMonitoringRuleEntity
 import com.android.appclock.domain.usecase.UsageMonitoringUseCases
 import com.android.appclock.presentation.common.UsageMonitoringRuleUi
 import com.android.appclock.presentation.common.UsageMonitoringSummaryUi
+import com.android.appclock.presentation.mapper.UsageMonitoringUiMapper
 import com.android.appclock.tracking.AppUsageStatsReader
-import com.android.appclock.utils.AppIconLoader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -84,7 +84,7 @@ class UsageMonitoringViewModel @Inject constructor(
             currentRules.map { it.packageName }.toSet()
         )
 
-        val uiRules = UsageMonitoringMapper.toListItemUiList(
+        val uiRules = UsageMonitoringUiMapper.toListItemUiList(
             entities = currentRules,
             usageByPackage = usageByPackage,
             foregroundPackageName = foregroundPackageName

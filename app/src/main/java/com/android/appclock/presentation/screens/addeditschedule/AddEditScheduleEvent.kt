@@ -1,7 +1,7 @@
 package com.android.appclock.presentation.screens.addeditschedule
 
-import com.android.appclock.data.model.RecurringType
-import com.android.appclock.data.model.ScheduleStatus
+import com.android.appclock.domain.model.RecurringType
+import com.android.appclock.domain.model.ScheduleStatus
 import com.android.appclock.presentation.common.InstalledAppUI
 
 sealed class AddEditScheduleEvent {

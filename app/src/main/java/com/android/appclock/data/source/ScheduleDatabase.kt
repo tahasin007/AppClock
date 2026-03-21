@@ -2,15 +2,15 @@ package com.android.appclock.data.source
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.android.appclock.domain.model.ScheduleAppEntity
-import com.android.appclock.domain.model.UsageMonitoringAlertStateEntity
-import com.android.appclock.domain.model.UsageMonitoringRuleEntity
+import com.android.appclock.data.source.entity.ScheduleDbEntity
+import com.android.appclock.data.source.entity.UsageMonitoringAlertStateDbEntity
+import com.android.appclock.data.source.entity.UsageMonitoringRuleDbEntity
 
 @Database(
     entities = [
-        ScheduleAppEntity::class,
-        UsageMonitoringRuleEntity::class,
-        UsageMonitoringAlertStateEntity::class
+        ScheduleDbEntity::class,
+        UsageMonitoringRuleDbEntity::class,
+        UsageMonitoringAlertStateDbEntity::class
     ],
     version = 5,
     exportSchema = true

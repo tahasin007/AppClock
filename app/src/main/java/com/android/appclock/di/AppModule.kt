@@ -3,7 +3,9 @@ package com.android.appclock.di
 import android.app.Application
 import android.content.Context
 import androidx.room.Room
+import com.android.appclock.core.utils.AppIconLoader
 import com.android.appclock.data.alarm.AlarmScheduler
+import com.android.appclock.data.monitoring.UsageAlertSchedulerImpl
 import com.android.appclock.data.repository.ScheduleRepositoryImpl
 import com.android.appclock.data.repository.UsageMonitoringRepositoryImpl
 import com.android.appclock.data.source.DatabaseMigrations
@@ -13,6 +15,8 @@ import com.android.appclock.data.source.UsageMonitoringAlertStateDao
 import com.android.appclock.data.source.UsageMonitoringDao
 import com.android.appclock.domain.repository.ScheduleRepository
 import com.android.appclock.domain.repository.UsageMonitoringRepository
+import com.android.appclock.domain.service.AppLaunchScheduler
+import com.android.appclock.domain.service.UsageAlertScheduler
 import com.android.appclock.domain.usecase.AddScheduleUseCase
 import com.android.appclock.domain.usecase.AddUsageMonitoringRuleUseCase
 import com.android.appclock.domain.usecase.DeleteScheduleByIdUseCase
@@ -29,7 +33,6 @@ import com.android.appclock.domain.usecase.ScheduleUseCases
 import com.android.appclock.domain.usecase.UsageMonitoringUseCases
 import com.android.appclock.tracking.AppLaunchTracker
 import com.android.appclock.tracking.AppUsageStatsReader
-import com.android.appclock.utils.AppIconLoader
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -123,8 +126,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAlarmScheduler(context: Context): AlarmScheduler {
+    fun provideAlarmScheduler(context: Context): AppLaunchScheduler {
         return AlarmScheduler(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUsageAlertScheduler(scheduler: UsageAlertSchedulerImpl): UsageAlertScheduler {
+        return scheduler
     }
 
     @Provides

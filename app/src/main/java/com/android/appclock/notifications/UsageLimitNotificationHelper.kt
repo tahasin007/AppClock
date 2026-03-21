@@ -28,7 +28,13 @@ object UsageLimitNotificationHelper {
         manager.createNotificationChannel(channel)
     }
 
-    fun notifyNearLimit(context: Context, ruleId: Int, appName: String, usageLabel: String, limitLabel: String) {
+    fun notifyNearLimit(
+        context: Context,
+        ruleId: Int,
+        appName: String,
+        usageLabel: String,
+        limitLabel: String
+    ) {
         if (!canPostNotifications(context)) return
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
@@ -41,7 +47,13 @@ object UsageLimitNotificationHelper {
         NotificationManagerCompat.from(context).notify(ruleId * 10 + 1, notification)
     }
 
-    fun notifyLimitReached(context: Context, ruleId: Int, appName: String, usageLabel: String, limitLabel: String) {
+    fun notifyLimitReached(
+        context: Context,
+        ruleId: Int,
+        appName: String,
+        usageLabel: String,
+        limitLabel: String
+    ) {
         if (!canPostNotifications(context)) return
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
@@ -56,10 +68,10 @@ object UsageLimitNotificationHelper {
 
     private fun canPostNotifications(context: Context): Boolean {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
     }
 }
 

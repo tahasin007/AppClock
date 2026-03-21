@@ -7,9 +7,9 @@ import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class AppClockApp : Application() {
-	override fun onCreate() {
-		super.onCreate()
-		UsageLimitNotificationHelper.ensureChannel(this)
-		UsageLimitAlertScheduler.ensureScheduled(this)
-	}
+    override fun onCreate() {
+        super.onCreate()
+        UsageLimitNotificationHelper.ensureChannel(this)
+        UsageLimitAlertScheduler.ensureScheduled(this)
+    }
 }

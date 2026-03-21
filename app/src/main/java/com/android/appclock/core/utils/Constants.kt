@@ -1,4 +1,4 @@
-package com.android.appclock.utils
+package com.android.appclock.core.utils
 
 object Constants {
     const val NAV_ARG_SCHEDULE_ID = "scheduleId"

@@ -7,11 +7,11 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.appclock.core.common.FilterState
-import com.android.appclock.data.mapper.ScheduleMapper
-import com.android.appclock.data.model.ScheduleStatus
+import com.android.appclock.core.utils.AppIconLoader
+import com.android.appclock.domain.model.ScheduleStatus
 import com.android.appclock.domain.usecase.ScheduleUseCases
 import com.android.appclock.presentation.common.SchedulesDataUI
-import com.android.appclock.utils.AppIconLoader
+import com.android.appclock.presentation.mapper.ScheduleUiMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
@@ -82,7 +82,7 @@ class HistoryViewModel @Inject constructor(
 
         getSchedulesJob = useCases.getSchedules()
             .onEach { scheduleEntities ->
-                val uiDataList = ScheduleMapper.toUiModelList(scheduleEntities)
+                val uiDataList = ScheduleUiMapper.toUiModelList(scheduleEntities)
                     .filter { it.status == ScheduleStatus.LAUNCHED || it.status == ScheduleStatus.FAILED }
 
                 _allSchedules.clear()

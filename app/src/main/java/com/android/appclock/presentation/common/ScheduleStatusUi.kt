@@ -8,7 +8,7 @@ import androidx.compose.material.icons.filled.TimerOff
 import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.android.appclock.data.model.ScheduleStatus
+import com.android.appclock.domain.model.ScheduleStatus
 
 val ScheduleStatus.uiIcon: ImageVector
     get() = when (this) {

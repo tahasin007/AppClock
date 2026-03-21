@@ -1,10 +1,10 @@
 package com.android.appclock.presentation.common
 
-import com.android.appclock.data.model.RecurringType
-import com.android.appclock.data.model.ScheduleStatus
-import com.android.appclock.utils.Constants.SCHEDULE_ID_DEFAULT
-import com.android.appclock.utils.DateTimeUtil.getFormattedDate
-import com.android.appclock.utils.DateTimeUtil.getFormattedTime
+import com.android.appclock.core.utils.Constants.SCHEDULE_ID_DEFAULT
+import com.android.appclock.core.utils.DateTimeUtil.getFormattedDate
+import com.android.appclock.core.utils.DateTimeUtil.getFormattedTime
+import com.android.appclock.domain.model.RecurringType
+import com.android.appclock.domain.model.ScheduleStatus
 
 data class SchedulesDataUI(
     val appName: String = "",

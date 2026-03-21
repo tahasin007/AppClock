@@ -30,7 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.android.appclock.core.common.ScheduleValidity
-import com.android.appclock.data.model.RecurringType
+import com.android.appclock.core.utils.AppIconLoader
+import com.android.appclock.core.utils.Constants.SCHEDULE_ID_DEFAULT
+import com.android.appclock.domain.model.RecurringType
 import com.android.appclock.presentation.common.InstalledAppUI
 import com.android.appclock.presentation.common.SchedulesDataUI
 import com.android.appclock.presentation.components.AppBasicTextField
@@ -48,8 +50,6 @@ import com.android.appclock.presentation.components.TimePickerDialog
 import com.android.appclock.ui.theme.ClockBlue
 import com.android.appclock.ui.theme.ClockBlueDark
 import com.android.appclock.ui.theme.ClockCyan
-import com.android.appclock.utils.AppIconLoader
-import com.android.appclock.utils.Constants.SCHEDULE_ID_DEFAULT
 import java.time.LocalDate
 import java.time.LocalTime
 

@@ -1,6 +1,6 @@
 package com.android.appclock.presentation.common
 
-import com.android.appclock.utils.Constants.USAGE_MONITORING_RULE_ID_DEFAULT
+import com.android.appclock.core.utils.Constants.USAGE_MONITORING_RULE_ID_DEFAULT
 
 private const val MILLIS_PER_MINUTE = 60_000L
 

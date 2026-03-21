@@ -6,12 +6,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.appclock.data.alarm.AlarmScheduler
-import com.android.appclock.data.mapper.ScheduleMapper
-import com.android.appclock.data.model.ScheduleStatus
+import com.android.appclock.core.utils.AppIconLoader
+import com.android.appclock.domain.model.ScheduleStatus
+import com.android.appclock.domain.service.AppLaunchScheduler
 import com.android.appclock.domain.usecase.ScheduleUseCases
 import com.android.appclock.presentation.common.SchedulesDataUI
-import com.android.appclock.utils.AppIconLoader
+import com.android.appclock.presentation.mapper.ScheduleUiMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
@@ -23,7 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AppLaunchViewModel @Inject constructor(
     private val useCases: ScheduleUseCases,
-    private val alarmScheduler: AlarmScheduler,
+    private val appLaunchScheduler: AppLaunchScheduler,
     val appIconLoader: AppIconLoader
 ) : ViewModel() {
 
@@ -47,7 +47,7 @@ class AppLaunchViewModel @Inject constructor(
             schedules.forEach { schedule ->
                 if (schedule.status == ScheduleStatus.UPCOMING && schedule.scheduledDateTime < nowMillis) {
                     useCases.editSchedule(schedule.copy(status = ScheduleStatus.FAILED))
-                    alarmScheduler.cancelScheduledLaunch(schedule.id)
+                    appLaunchScheduler.cancelScheduledLaunch(schedule.id)
                 }
             }
 
@@ -61,7 +61,7 @@ class AppLaunchViewModel @Inject constructor(
 
         getSchedulesJob = useCases.getSchedules()
             .onEach { scheduleEntities ->
-                val uiDataList = ScheduleMapper.toUiModelList(scheduleEntities)
+                val uiDataList = ScheduleUiMapper.toUiModelList(scheduleEntities)
 
                 _schedulesState.clear()
 

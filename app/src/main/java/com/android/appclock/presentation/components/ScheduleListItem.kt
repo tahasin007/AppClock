@@ -33,11 +33,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.android.appclock.data.model.ScheduleStatus
+import com.android.appclock.core.utils.AppIconLoader
+import com.android.appclock.domain.model.ScheduleStatus
 import com.android.appclock.presentation.common.SchedulesDataUI
 import com.android.appclock.presentation.common.uiColor
 import com.android.appclock.presentation.common.uiIcon
-import com.android.appclock.utils.AppIconLoader
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
