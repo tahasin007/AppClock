@@ -157,7 +157,7 @@ fun DrawerMenuContent(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "Schedule and automate app launches at exact times. Build reliable routines without touching your phone.",
+                        text = "Schedule app launches and track daily app usage limits in one place.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
