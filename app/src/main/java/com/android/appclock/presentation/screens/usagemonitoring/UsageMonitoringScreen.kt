@@ -80,7 +80,7 @@ fun UsageMonitoringScreen(
             item {
                 SectionHeader(
                     title = "Tracked apps",
-                    subtitle = "One app = one rule. Add apps to monitor foreground usage and set daily limits."
+                    subtitle = "Add apps to monitor foreground usage and set daily limits."
                 )
             }
 

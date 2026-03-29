@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.QueryStats
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.FilledTonalButton
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun DrawerMenuContent(
+    hasNotificationPermission: Boolean,
     hasAlarmPermission: Boolean,
     hasOverlayPermission: Boolean,
     hasUsageStatsPermission: Boolean,
@@ -72,7 +74,8 @@ fun DrawerMenuContent(
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
         // ── Permissions status ───────────────────────────────────
-        val allGranted = hasAlarmPermission && hasOverlayPermission && hasUsageStatsPermission
+        val allGranted =
+            hasNotificationPermission && hasAlarmPermission && hasOverlayPermission && hasUsageStatsPermission
 
         Surface(
             shape = RoundedCornerShape(24.dp),
@@ -93,6 +96,11 @@ fun DrawerMenuContent(
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
+                PermissionRow(
+                    label = "Notifications",
+                    icon = Icons.Default.Notifications,
+                    granted = hasNotificationPermission
+                )
                 PermissionRow(
                     label = "Exact alarm",
                     icon = Icons.Default.Alarm,

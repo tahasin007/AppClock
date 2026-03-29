@@ -1,5 +1,12 @@
 package com.android.appclock.presentation.root
 
+import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -12,9 +19,14 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -34,15 +46,45 @@ fun AppClockContent(viewModel: PermissionViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentPermissionDialog = viewModel.currentPermissionDialog.value
+    var notificationRequestInProgress by remember { mutableStateOf(false) }
+
+    fun refreshPermissions() {
+        viewModel.checkPermissions(
+            canRequestNotificationSystemPrompt = shouldRequestNotificationSystemPrompt(
+                context = context,
+                hasNotificationPermission = viewModel.hasNotificationPermission.value,
+                hasRequestedBefore = viewModel.hasRequestedNotificationPermission.value
+            )
+        )
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) {
+        notificationRequestInProgress = false
+        refreshPermissions()
+    }
 
     LaunchedEffect(Unit) {
-        viewModel.checkPermissions()
+        refreshPermissions()
+    }
+
+    LaunchedEffect(viewModel.shouldRequestNotificationPermission.value) {
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            viewModel.shouldRequestNotificationPermission.value &&
+            !notificationRequestInProgress
+        ) {
+            notificationRequestInProgress = true
+            viewModel.markNotificationPermissionRequested()
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                viewModel.checkPermissions()
+                refreshPermissions()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -58,10 +100,11 @@ fun AppClockContent(viewModel: PermissionViewModel = hiltViewModel()) {
                 drawerContainerColor = MaterialTheme.colorScheme.surface
             ) {
                 DrawerMenuContent(
+                    hasNotificationPermission = viewModel.hasNotificationPermission.value,
                     hasAlarmPermission = viewModel.hasAlarmPermission.value,
                     hasOverlayPermission = viewModel.hasOverlayPermission.value,
                     hasUsageStatsPermission = viewModel.hasUsageStatsPermission.value,
-                    onFixPermissions = { viewModel.checkPermissions() },
+                    onFixPermissions = { refreshPermissions() },
                     onCloseClick = {
                         scope.launch { drawerState.close() }
                     }
@@ -83,6 +126,15 @@ fun AppClockContent(viewModel: PermissionViewModel = hiltViewModel()) {
         })
 
     Box(modifier = Modifier.fillMaxSize()) {
+        if (currentPermissionDialog == AppPermission.NOTIFICATIONS && !notificationRequestInProgress) {
+            PermissionDialog(
+                title = "Allow Notifications",
+                message = "Enable notifications in settings to receive app launch and usage limit alerts.",
+                onConfirm = { viewModel.openNotificationSettings(context) },
+                onDismiss = { viewModel.dismissCurrentDialog() }
+            )
+        }
+
         if (currentPermissionDialog == AppPermission.EXACT_ALARM) {
             PermissionDialog(
                 title = "Allow Exact Alarm",
@@ -109,5 +161,30 @@ fun AppClockContent(viewModel: PermissionViewModel = hiltViewModel()) {
                 onDismiss = { viewModel.dismissCurrentDialog() }
             )
         }
+    }
+}
+
+private fun shouldRequestNotificationSystemPrompt(
+    context: Context,
+    hasNotificationPermission: Boolean,
+    hasRequestedBefore: Boolean
+): Boolean {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || hasNotificationPermission) {
+        return false
+    }
+
+    val activity = context.findActivity() ?: return !hasRequestedBefore
+    val shouldShowRationale = ActivityCompat.shouldShowRequestPermissionRationale(
+        activity,
+        Manifest.permission.POST_NOTIFICATIONS
+    )
+    return shouldShowRationale || !hasRequestedBefore
+}
+
+private tailrec fun Context.findActivity(): Activity? {
+    return when (this) {
+        is Activity -> this
+        is ContextWrapper -> baseContext.findActivity()
+        else -> null
     }
 }

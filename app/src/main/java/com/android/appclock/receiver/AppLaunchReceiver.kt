@@ -1,11 +1,15 @@
 package com.android.appclock.receiver
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.core.app.NotificationCompat
 import com.android.appclock.R
 import com.android.appclock.core.utils.Constants.ACTION_TRIGGER_ALARM
@@ -147,6 +151,11 @@ class AppLaunchReceiver : BroadcastReceiver() {
     }
 
     private fun sendNotification(context: Context, appName: String, success: Boolean) {
+        if (!canPostNotifications(context)) {
+            Log.w(TAG, "Skipping app launch notification")
+            return
+        }
+
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "app_launch_channel"
@@ -172,6 +181,14 @@ class AppLaunchReceiver : BroadcastReceiver() {
             .build()
 
         notificationManager.notify(System.currentTimeMillis().toInt(), notification)
+    }
+
+    private fun canPostNotifications(context: Context): Boolean {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun getRepository(context: Context): ScheduleRepository {
